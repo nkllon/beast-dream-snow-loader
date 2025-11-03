@@ -44,15 +44,25 @@ User → API Gateway (with API key) → ServiceNow (with real credentials)
 
 ### 3. Rate Limiting & Throttling
 
-**Problem:** ServiceNow has rate limits, need to manage them
-- Multiple clients hitting same ServiceNow instance
-- Want to prevent one client from hogging all quota
-- Need fair usage distribution
+**Note:** ServiceNow has built-in rate limiting and API protection. Using an API gateway for rate limiting is only needed for:
+- **Multi-tenant scenarios** where you want to allocate ServiceNow's quota across multiple clients
+- **Additional layers** of protection beyond ServiceNow's built-in limits
+- **Pre-emptive queuing** before requests hit ServiceNow
 
-**Solution:** API Gateway with rate limiting
-- Per-client rate limits
-- Queue requests when limit hit
-- Distribute quota fairly
+**ServiceNow's Built-in Protection:**
+- Rate limiting per user/role (configurable)
+- API throttling and quota management
+- OAuth token-based authentication
+- API key authentication with audit trails
+- IP restrictions and access controls
+
+**When You'd Still Need Gateway Rate Limiting:**
+- MSP allocating ServiceNow quota across clients (fair distribution)
+- Want to queue requests before they hit ServiceNow
+- Need to implement different rate limits than ServiceNow provides
+- Want to track usage separately from ServiceNow's audit logs
+
+**Reality Check:** If ServiceNow's rate limiting is insufficient, that's a ServiceNow problem, not something you should paper over with a gateway. The gateway rate limiting is mainly for multi-tenant quota allocation, not compensating for ServiceNow weaknesses.
 
 ### 4. Multi-Instance Aggregation
 
@@ -106,6 +116,17 @@ Query → API Gateway → [Instance A, Instance B, Instance C] → Aggregated Re
 - Lower latency (direct connection)
 - Fewer moving parts
 - Client manages their own credentials
+- **ServiceNow's built-in security is sufficient** (API keys, OAuth, rate limiting, audit logs)
+
+**ServiceNow Already Provides:**
+- ✅ Rate limiting and throttling
+- ✅ API key authentication with service accounts
+- ✅ OAuth 2.0 token support
+- ✅ Role-based access control
+- ✅ Audit logging
+- ✅ IP restrictions
+
+**Don't add a gateway to compensate for ServiceNow weaknesses** - use ServiceNow's built-in features properly first.
 
 ## Real-World Example: MSP Scenario
 
