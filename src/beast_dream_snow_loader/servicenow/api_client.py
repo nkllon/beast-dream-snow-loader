@@ -14,10 +14,12 @@ class ServiceNowAPIClient:
     """ServiceNow REST API client with authentication and basic operations.
 
     Supports multiple authentication methods (in order of preference):
-    1. OAuth 2.0 token (Bearer token) - most secure
-    2. API key (Basic Auth with API key as password) - recommended
-    3. Basic Auth (username/password) - fallback
+    1. API key (Basic Auth with API key as password) - recommended for production
+       - Use with service account user (named user, no UI login)
+    2. OAuth 2.0 token (Bearer token) - optional, can tie to service account
+    3. Basic Auth (username/password) - development/testing only
 
+    Production Pattern: Named service account user with API key (no UI login).
     See docs/servicenow_constraints.md for assumptions.
     """
 
@@ -39,9 +41,10 @@ class ServiceNowAPIClient:
             oauth_token: OAuth 2.0 access token (most secure, Bearer token)
 
         Authentication Priority:
-        1. OAuth token (SERVICENOW_OAUTH_TOKEN env var) - Bearer token
-        2. API key (SERVICENOW_API_KEY env var) - Basic Auth with API key as password
-        3. Username/password (SERVICENOW_USERNAME/SERVICENOW_PASSWORD) - Basic Auth fallback
+        1. API key (SERVICENOW_API_KEY + SERVICENOW_USERNAME) - Recommended for production
+           - Use service account user (named user, no UI login)
+        2. OAuth token (SERVICENOW_OAUTH_TOKEN env var) - Optional, Bearer token
+        3. Username/password (SERVICENOW_USERNAME/SERVICENOW_PASSWORD) - Development/testing only
 
         Credentials are loaded from:
         1. Function arguments (highest priority)
@@ -67,20 +70,22 @@ class ServiceNowAPIClient:
             }
         )
 
-        # Authentication: Priority 1 - OAuth Token (Bearer token)
-        oauth_token = oauth_token or os.getenv("SERVICENOW_OAUTH_TOKEN", "")
-        if oauth_token:
-            self.session.headers["Authorization"] = f"Bearer {oauth_token}"
-            return
-
-        # Authentication: Priority 2 - API Key (Basic Auth with API key as password)
+        # Authentication: Priority 1 - API Key (Recommended for production)
+        # Use service account user (named user, no UI login) with API key
         api_key = api_key or os.getenv("SERVICENOW_API_KEY", "")
         username = username or os.getenv("SERVICENOW_USERNAME", "")
         if api_key and username:
             self.session.auth = (username, api_key)
             return
 
-        # Authentication: Priority 3 - Basic Auth (username/password) - Fallback
+        # Authentication: Priority 2 - OAuth Token (Optional)
+        oauth_token = oauth_token or os.getenv("SERVICENOW_OAUTH_TOKEN", "")
+        if oauth_token:
+            self.session.headers["Authorization"] = f"Bearer {oauth_token}"
+            return
+
+        # Authentication: Priority 3 - Basic Auth (username/password) - Development/testing only
+        # NOT recommended for production - use service account with API key instead
         password = password or os.getenv("SERVICENOW_PASSWORD", "")
         if username and password:
             self.session.auth = (username, password)
@@ -88,10 +93,12 @@ class ServiceNowAPIClient:
 
         # No valid authentication found
         raise ValueError(
-            "ServiceNow authentication required. Provide one of:\n"
-            "  - OAuth token: SERVICENOW_OAUTH_TOKEN env var\n"
+            "ServiceNow authentication required. Recommended for production:\n"
             "  - API key: SERVICENOW_API_KEY + SERVICENOW_USERNAME env vars\n"
-            "  - Username/password: SERVICENOW_USERNAME + SERVICENOW_PASSWORD env vars"
+            "    (Use service account user - named user, no UI login)\n"
+            "  - OAuth token: SERVICENOW_OAUTH_TOKEN env var (optional)\n"
+            "  - Username/password: SERVICENOW_USERNAME + SERVICENOW_PASSWORD env vars\n"
+            "    (Development/testing only - NOT recommended for production)"
         )
 
     def create_record(self, table: str, data: dict[str, Any]) -> dict[str, Any]:

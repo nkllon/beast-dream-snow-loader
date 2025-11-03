@@ -64,20 +64,34 @@
 
 ---
 
-### 5. Authentication: API Key or OAuth Token (Preferred) ✅
+### 5. Authentication: Service Account with API Key (Production) ✅
 
-**Assumption:** ServiceNow instance supports API key authentication (via Basic Auth with API key as password) or OAuth 2.0 token authentication.
+**Assumption:** ServiceNow instance uses a **named service account user** for API operations:
+- Service account user has a name/identity (for audit logs)
+- Service account user has specific role/permissions for API operations
+- Service account user **cannot log into UI** (no UI access)
+- Service account uses **API key** (not password) for authentication
 
-**Preferred Methods:**
-1. **API Key** (Basic Auth with API key as password) - `SERVICENOW_API_KEY` env var
-2. **OAuth Token** (Bearer token) - `SERVICENOW_OAUTH_TOKEN` env var
-3. **Basic Auth** (username/password) - Fallback for backwards compatibility
+**Authentication Methods:**
+1. **API Key** (Primary for production) - `SERVICENOW_API_KEY` + `SERVICENOW_USERNAME` env vars
+   - Basic Auth with API key as password
+   - Service account user (no UI login)
+   - Named user for audit trail
+2. **OAuth Token** (Optional) - `SERVICENOW_OAUTH_TOKEN` env var
+   - Bearer token authentication
+   - Can be tied to service account user
+3. **Username/Password** (Development/testing only) - `SERVICENOW_USERNAME` + `SERVICENOW_PASSWORD`
+   - Basic Auth with actual password
+   - **NOT recommended for production**
+   - Only for dev/testing with regular user accounts
 
-**Rationale:** API keys and OAuth tokens are more secure than username/password. ServiceNow supports both:
-- API keys via Basic Auth (API key used as password)
-- OAuth 2.0 tokens (Bearer token authentication)
+**Rationale:** 
+- Service account pattern provides audit trail (named user) without exposing UI credentials
+- API keys are simpler than OAuth for system-to-system integrations
+- Never use normal user credentials in production (except dev/testing)
+- Service account user should not have UI login capability
 
-**Impact if Violated:** Would need to use username/password (less secure, not recommended for production).
+**Impact if Violated:** Would need to use regular user credentials (not recommended for production).
 
 ---
 
