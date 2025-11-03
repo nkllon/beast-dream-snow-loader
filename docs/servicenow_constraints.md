@@ -152,7 +152,12 @@
 
 **Impact if Violated:** Would need single-phase approach (e.g., GraphQL batch mutations, pre-create placeholder records, or Import Sets).
 
-**Discovery Task:** Investigate ServiceNow GraphQL API capabilities for batch mutations and transactional semantics before considering switch from REST.
+**Discovery Tasks:**
+1. **GraphQL API**: Investigate batch mutations and transactional semantics before considering switch from REST
+2. **Changeset/Change Request**: Investigate if we can:
+   - Initiate/start a changeset before writing records
+   - Detect if we're already in a changeset context
+   - Associate operations with Change Request for transactional behavior
 
 ---
 

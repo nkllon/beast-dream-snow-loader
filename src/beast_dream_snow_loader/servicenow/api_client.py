@@ -392,3 +392,72 @@ class ServiceNowAPIClient:
         response = self.session.get(url, params=params)
         response.raise_for_status()
         return response.json().get("result", [])  # type: ignore
+
+    def create_change_request(
+        self,
+        short_description: str,
+        type: str = "standard",  # "standard", "normal", "emergency"
+        description: str | None = None,
+    ) -> dict[str, Any]:
+        """Create a Change Request in ServiceNow.
+
+        Args:
+            short_description: Short description of the change
+            type: Change type - "standard" (pre-approved), "normal" (needs approval), "emergency"
+            description: Detailed description (optional)
+
+        Returns:
+            Created Change Request data with sys_id
+
+        Raises:
+            requests.HTTPError: If API request fails
+        """
+        url = f"{self.base_url}/table/change_request"
+        data: dict[str, Any] = {
+            "short_description": short_description,
+            "type": type,
+        }
+        if description:
+            data["description"] = description
+
+        response = self.session.post(url, json=data)
+        response.raise_for_status()
+        return response.json().get("result", {})  # type: ignore
+
+    def get_current_change_request(self) -> dict[str, Any] | None:
+        """Get current Change Request context if we're in one.
+
+        Note: This may not be directly supported by ServiceNow API.
+        We might need to track Change Request context manually or use headers.
+
+        Returns:
+            Current Change Request data if in a change context, None otherwise
+        """
+        # TODO: Investigate ServiceNow API for detecting Change Request context
+        # This might require:
+        # - Session headers (X-Change-Request-ID?)
+        # - API endpoint for current context
+        # - Manual tracking of Change Request association
+        return None
+
+    def associate_with_change_request(
+        self, table: str, record_sys_id: str, change_request_sys_id: str
+    ) -> dict[str, Any]:
+        """Associate a record with a Change Request.
+
+        Args:
+            table: Table name of the record
+            record_sys_id: sys_id of the record to associate
+            change_request_sys_id: sys_id of the Change Request
+
+        Returns:
+            Updated record data
+
+        Raises:
+            requests.HTTPError: If API request fails
+        """
+        url = f"{self.base_url}/table/{table}/{record_sys_id}"
+        data = {"change_request": change_request_sys_id}
+        response = self.session.put(url, json=data)
+        response.raise_for_status()
+        return response.json().get("result", {})  # type: ignore
