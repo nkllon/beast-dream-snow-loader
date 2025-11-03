@@ -1,5 +1,44 @@
 # Agent Communication Patterns & Principles
 
+## Table of Contents
+
+1. [Key Concepts](#key-concepts)
+2. [Quick Start for Agents](#quick-start-for-agents)
+3. [Memes as Architectural Principles](#memes-as-architectural-principles)
+4. [Collaborative Debugging Methodology](#collaborative-debugging-methodology)
+5. [Emotional Health & Gamification](#emotional-health--gamification)
+6. [Principle-Level vs. Requirements-Level](#principle-level-vs-requirements-level)
+7. [Vector-Level Principles: Proof, Scale, Trust, Together](#vector-level-principles-proof-scale-trust-together)
+8. [Project-Specific Guidance Patterns](#project-specific-guidance-patterns)
+9. [Universal Patterns for Beast Projects](#universal-patterns-for-beast-projects)
+10. [Agent Guidance Checklist](#agent-guidance-checklist)
+11. [References](#references)
+
+## Key Concepts
+
+Before diving into the patterns and principles, here are the core concepts used throughout this document:
+
+- **Beast**: The architectural framework and set of principles that guide development decisions across beast projects. It represents a pattern-driven, principle-level approach to system design.
+- **Beastmaster**: The strategic orchestrator role in the agent network, focused on accessibility and user-centric interfaces. Also refers to the 1Password vault name for project credentials.
+- **Beast Mode**: A collaborative agent system using Redis pub/sub for multi-agent communication and coordination.
+- **BeastSpec**: The spec-driven development workflow system (forked from cc-sdd) that provides structured feature development through `/kiro:*` commands.
+- **nkllon**: The GitHub organization/namespace prefix for beast projects (e.g., `nkllon/beast-*` repositories).
+- **Catbert Lemonade**: A pattern for creating OSS projects that answer recruiter/client questions while demonstrating capability - "deliver while you sell and sell while you deliver."
+- **Kiro**: Informally used as a verb meaning "to do spec-driven development" (e.g., "Can you kiro that feature?"). Also refers to the Kiro IDE and its spec format compatibility.
+
+## Quick Start for Agents
+
+When working on a beast project, follow these essential steps:
+
+1. **Read Project Context**: Check for project-specific `AGENTS.md` or `agents.md` files
+2. **Understand Domain Vocabulary**: Review the [Key Concepts](#key-concepts) section above
+3. **Follow Beast Principles**: Apply principle-level thinking, not just step-by-step following
+4. **Use Quality Gates**: Never bypass quality checks (no `--no-verify` flags)
+5. **Verify Changes**: Check actual data first, verify each change before moving on
+6. **Ask Questions**: When uncertain, ask clarifying questions instead of repeating fixes
+
+See the [Agent Guidance Checklist](#agent-guidance-checklist) for a complete checklist.
+
 ## Memes as Architectural Principles
 
 Memes serve as principles that provide immediate handles for decision-making at an architectural level, rather than detailed requirement specifications. They are not useful to simple systems, but well-endowed LLMs can pick up contextual meaning and apply it appropriately.
@@ -11,12 +50,13 @@ When domain-specific vocabulary is used consistently, it carries architectural m
 - **"Beast"** → Implies specific architectural characteristics within the Beastmaster framework context
 - **"Beast thing"** → A type/pattern within that architecture  
 - **"Apply beast principles"** → Carries an entire decision-making framework
+- **"Look before you leap"** → Check actual data, read files, verify patterns before making changes or assumptions
 
 ### How LLMs Interpret This
 
 For LLMs with sufficient context awareness:
 
-1. **Recognize domain vocabulary** - Terms like `beast`, `nkllon`, etc. signal architectural context
+1. **Recognize domain vocabulary** - Terms like `beast`, `nkllon` (GitHub organization), `beastmaster`, etc. signal architectural context
 2. **Infer patterns** - From context, understand what architectural patterns are implied
 3. **Apply principles** - Make decisions aligned with the architectural principles, not just follow steps
 
@@ -129,7 +169,7 @@ When debugging collaboratively (AI + Human), follow this methodology:
 6. **Ask Questions Before Acting** (especially when uncertain or already tried):
    - If you've already tried something once, doing it again is low-percentage
    - Realize when you're repeating a fix you've already attempted
-   - Guessing and fiddling can cause more harm than good (forgot cleanup, confusion, mixed state)
+   - Guessing and fiddling can cause more harm than good (forgetting cleanup, confusion, mixed state)
    - **From the agent's perspective: A question is better than an answer when uncertain**
    - It's more important to know the right question than all the answers
    - When unsure: Ask clarifying questions instead of making more changes
@@ -177,6 +217,53 @@ This creates productive collaboration while avoiding anthropomorphism.
 - Good for implementation, not architectural vision
 
 The goal is to communicate at the **principle level** when working with capable systems, allowing them to infer appropriate patterns and make aligned decisions.
+
+## Vector-Level Principles: Proof, Scale, Trust, Together
+
+When working on projects, especially those following the "Deliver while you sell" pattern, consider these complementary strategic vectors:
+
+### Vector 1: Proof (Specific Solution)
+- **Principle**: Deliver a working solution for a specific, real problem
+- **Purpose**: Validates approach and provides immediate tangible value
+- **Application**: Lead with specific use case (e.g., "UniFi → ServiceNow integration")
+- **Power**: Demonstrates capability through working code, not just concepts
+
+### Vector 2: Scale (Reusable Pattern)
+- **Principle**: Design solutions as reusable patterns, not one-off implementations
+- **Purpose**: Amplifies value by showing broader applicability
+- **Application**: Emphasize pattern/approach in documentation and examples
+- **Power**: Shows architectural thinking and extensibility beyond specific use case
+
+### Vector 3: Trust (Technical Excellence)
+- **Principle**: Maintain high technical standards and best practices
+- **Purpose**: Builds credibility and demonstrates professionalism
+- **Application**: Follow beast principles, type safety, TDD, quality gates
+- **Power**: Quality code earns trust and signals competence
+
+### Vector 4: Together (Strategic Combination)
+- **Principle**: Vectors complement each other: Proof validates Scale, Scale amplifies Proof, Trust underlies both
+- **Purpose**: Creates powerful combination where 1+1+1 > 3
+- **Application**: Position projects with all three vectors working together
+- **Power**: Credible solution + scalable approach + quality foundation = strong positioning
+
+### Using Vector Principles
+
+**For Decision-Making:**
+- When making architectural choices, consider: Does this provide Proof? Enable Scale? Build Trust?
+- Evaluate trade-offs through vector lens: Does this strengthen or weaken vector complementarity?
+
+**For Positioning:**
+- **For Users**: Lead with Proof (specific solution)
+- **For Developers**: Emphasize Scale (reusable pattern)
+- **For Evaluators**: Demonstrate Trust (technical excellence)
+- **Together**: All three vectors working in harmony
+
+**For Perspective-Taking:**
+- Use stakeholder personas (documented in project steering docs) to generate different perspectives
+- Stakeholder personas answer: "How would X see this decision?"
+- Vector principles answer: "Does this strengthen our strategic positioning?"
+
+**Note**: Vector principles are about HOW to think strategically (proof, scale, trust, together). Stakeholder personas are about WHO to consider when making decisions. Use both: vectors for strategic positioning, personas for perspective-taking on specific tasks.
 
 ## Project-Specific Guidance Patterns
 
@@ -473,4 +560,5 @@ When working on beast projects, ensure:
 **For AI Agents**: This document provides principle-level guidance. Read project-specific `AGENTS.md` files for detailed requirements. Apply beast principles through context and inference.
 
 **Last Updated**: 2025-11-03  
-**Status**: Active Development
+**Status**: Active Development  
+**Agent Role Accepted**: 2025-11-03

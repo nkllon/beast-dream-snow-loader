@@ -25,6 +25,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Systems Administration",
 ]
+dependencies = [
+    "pydantic",
+    "requests",
+    "python-dotenv",
+]
+# Note: beast-unifi-integration will be added when available
 
 [project.urls]
 Homepage = "https://github.com/nkllon/beast-dream-snow-loader"
@@ -32,12 +38,6 @@ Repository = "https://github.com/nkllon/beast-dream-snow-loader"
 Documentation = "https://github.com/nkllon/beast-dream-snow-loader#readme"
 "Bug Tracker" = "https://github.com/nkllon/beast-dream-snow-loader/issues"
 "PyPI" = "https://pypi.org/project/beast-dream-snow-loader/"
-
-[project.dependencies]
-beast-unifi-integration = "*"
-requests = "*"
-python-dotenv = "*"
-pydantic = {version = "*", optional = true}
 
 [tool.black]
 line-length = 88
