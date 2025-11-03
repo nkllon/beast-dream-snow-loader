@@ -231,5 +231,14 @@ async function trackUsage(apiKey, request, response, env) {
 - Add features as needed
 - Iterate based on usage
 
+**Especially Valuable When:**
+- Multiple developers working on same thing
+- Short timelines ("get it done now")
+- Global team (time zones, coordination)
+- Lab manager managing cross-cutting concerns
+- Need to move fast but securely
+
+**See:** [LAB_MANAGEMENT_USE_CASE.md](LAB_MANAGEMENT_USE_CASE.md) for operational benefits
+
 This is a good use case for turning it on now!
 
