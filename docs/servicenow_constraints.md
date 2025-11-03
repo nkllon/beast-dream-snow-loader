@@ -55,13 +55,16 @@
 - `cmdb_ci_network_gear` - Network device CI
 - `cmdb_endpoint` - Endpoint/client records (may be custom)
 
-**PDI Finding:** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) may not exist on all instances.
-- **ITOM Required?** These tables may require ITOM (IT Operations Management) plugin to be installed/activated.
+**PDI Finding (Verified):** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) do not exist on PDI.
+- **Verified via:** `scripts/check_table_requirements.py` - confirms tables don't exist
+- **ITOM Required?** These tables likely require ITOM (IT Operations Management) plugin to be installed/activated.
 - **Base Table Available:** Base `cmdb_ci` table exists and works for smoke testing.
 - **Workaround:** Use base `cmdb_ci` table with `sys_class_name` field to categorize CIs, or create custom tables.
+- **Documentation:** ServiceNow KB article KB1691523 lists CI types requiring ITOM subscription.
 
 **Rationale:** Standard ServiceNow CMDB structure. If custom tables needed, we'll adjust.
 **Smoke Test Result:** Base `cmdb_ci` table works. Specific CI type tables not found on PDI.
+**Verification Method:** Script queries `sys_db_object` table and attempts table access to verify existence.
 
 **Impact if Violated:** Would need to create custom tables or use different table names or base `cmdb_ci` table.
 

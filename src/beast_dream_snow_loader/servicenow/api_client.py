@@ -419,6 +419,51 @@ class ServiceNowAPIClient:
         response.raise_for_status()
         return response.json().get("result", [])  # type: ignore
 
+    def table_exists(self, table_name: str) -> bool:
+        """Check if a ServiceNow table exists and is accessible.
+
+        Args:
+            table_name: ServiceNow table name to check
+
+        Returns:
+            True if table exists and is accessible, False otherwise
+        """
+        try:
+            # Try to query the table with a minimal query (limit 1)
+            self.query_records(table_name, query=None, limit=1)
+            return True
+        except Exception:
+            return False
+
+    def get_table_info(self, table_name: str) -> dict[str, Any] | None:
+        """Get table metadata from sys_db_object table.
+
+        Args:
+            table_name: ServiceNow table name
+
+        Returns:
+            Dictionary with table metadata (name, label, scope, etc.) or None if not found
+        """
+        try:
+            # Query sys_db_object to get table metadata
+            results = self.query_records(
+                "sys_db_object",
+                query=f"name={table_name}",
+                limit=1,
+            )
+            if results:
+                # Filter to what we care about
+                return {
+                    "name": results[0].get("name"),
+                    "label": results[0].get("label"),
+                    "sys_class_name": results[0].get("sys_class_name"),
+                    "super_class": results[0].get("super_class"),
+                    "scope": results[0].get("scope"),
+                }
+            return None
+        except Exception:
+            return None
+
     def create_change_request(
         self,
         short_description: str,
