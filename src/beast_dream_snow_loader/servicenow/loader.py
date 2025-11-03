@@ -143,14 +143,27 @@ def load_entities_with_relationships(
     current_changeset = client.get_current_changeset()
     active_changeset_id = changeset_id or (current_changeset.get("sys_id") if current_changeset else None)
 
+    # Inform user about changeset status before operations
+    if not active_changeset_id:
+        print(
+            "ℹ️  Not in a changeset context. Operations will be non-transactional.\n"
+            "   If you're managing changesets, you can:\n"
+            "   - Create a changeset first in ServiceNow\n"
+            "   - Provide changeset_id parameter when calling this function\n"
+            "   - Set create_changeset=True (when implemented)\n"
+            "   Proceeding with data load..."
+        )
+    else:
+        print(f"✅ Operating within changeset: {active_changeset_id}")
+
     # If create_changeset=True and not in a changeset, create one
     if create_changeset and not active_changeset_id:
         # TODO: Implement create_changeset() when ServiceNow API is investigated
         # For now, this is a placeholder
         print(
             "⚠️  Changeset creation requested but not yet implemented.\n"
-            "   Proceeding without changeset (non-transactional).\n"
-            "   Investigation needed: ServiceNow changeset API endpoint and structure."
+            "   Please create a changeset manually in ServiceNow first.\n"
+            "   Proceeding without changeset (non-transactional)."
         )
 
     # Initialize id_mapping: {table_name: {source_id: sys_id}}
