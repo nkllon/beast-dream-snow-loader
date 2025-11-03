@@ -38,7 +38,7 @@ jobs:
         run: uv run pytest tests/ -v
 
       - name: Check package build
-        run: uv build --check
+        run: uv build
 
   test-matrix:
     runs-on: ubuntu-latest
