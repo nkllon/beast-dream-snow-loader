@@ -52,7 +52,13 @@ This plugin provides all new class models provided by ServiceNow, including:
 
 **Activation Required:** This plugin must be activated to access these specific CI type tables.
 
-**Note:** This is separate from ITOM. ITOM licensing may be required for some CI types, but the CI class models themselves come from this plugin.
+**Cost & Availability:**
+- **PDIs:** Free to activate (no cost)
+- **Production:** Included with **ITOM Visibility** subscription (typically ~$9,000/year)
+- **If doing CMDB work:** You likely already have ITOM Visibility, which includes this plugin
+- **If just testing:** PDIs allow free activation - this is often one of the first plugins enabled for CMDB work
+
+**Note:** This plugin is included with ITOM Visibility. If you're doing CMDB work, you likely already have access. If you're just kicking tires, PDIs make it free to activate.
 
 ### ITOM (IT Operations Management)
 

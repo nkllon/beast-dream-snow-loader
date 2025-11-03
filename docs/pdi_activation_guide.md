@@ -4,6 +4,12 @@
 
 To use the specific CI type tables (`cmdb_ci_network_gateway`, `cmdb_ci_network_gear`, etc.), you need to activate the **CMDB CI Class Models** plugin.
 
+**Note on Cost:**
+- **PDIs:** Plugin activation is free - no cost to activate
+- **Production:** Plugin is included with **ITOM Visibility** subscription (typically ~$9,000/year)
+- **If you're doing CMDB work:** You likely already have ITOM Visibility, which includes this plugin
+- **If you're just testing:** PDIs allow free plugin activation - this is often one of the first plugins enabled for CMDB work
+
 ## Quick Activation Steps
 
 1. **Log into your PDI:**
