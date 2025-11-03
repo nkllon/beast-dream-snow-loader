@@ -16,7 +16,7 @@ class FieldMappingConfig:
     def _get_default_host_mappings(self) -> dict[str, str]:
         """Get default field mappings for hosts → gateway CI."""
         return {
-            "id": "sys_id",
+            "id": "u_unifi_source_id",  # Map to source ID, not sys_id
             "hardwareId": "hardware_id",
             "reportedState.hostname": "hostname",
             "ipAddress": "ip_address",
@@ -30,34 +30,33 @@ class FieldMappingConfig:
     def _get_default_site_mappings(self) -> dict[str, str]:
         """Get default field mappings for sites → location."""
         return {
-            "siteId": "sys_id",
+            "siteId": "u_unifi_source_id",  # Map to source ID, not sys_id
             "meta.name": "name",
             "meta.desc": "description",
             "meta.timezone": "timezone",
-            "hostId": "host_id",
+            # Note: hostId relationship handled separately (two-phase linking)
         }
 
     def _get_default_device_mappings(self) -> dict[str, str]:
         """Get default field mappings for devices → network device CI."""
         return {
-            "hostId": "sys_id",  # Using hostId as identifier for now
+            "hostId": "u_unifi_source_id",  # Map to source ID, not sys_id
             # Additional fields may come from API
             "mac": "mac_address",
             "serial": "serial_number",
             "model": "model",
-            # Note: hostId mapped to sys_id above, host_id FK handled separately if needed
+            # Note: Relationships (host_id, site_id) handled separately (two-phase linking)
         }
 
     def _get_default_client_mappings(self) -> dict[str, str]:
         """Get default field mappings for clients → endpoint."""
         return {
-            # Client identifier (may need expansion)
+            # Generate source ID from hostname or MAC
             "hostname": "hostname",
             "ip": "ip_address",
             "mac": "mac_address",
             "deviceType": "device_type",
-            "siteId": "site_id",
-            "deviceId": "device_id",
+            # Note: Relationships (site_id, device_id) handled separately (two-phase linking)
         }
 
     def get_host_mappings(self) -> dict[str, str]:

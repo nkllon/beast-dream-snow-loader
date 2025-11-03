@@ -4,11 +4,22 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ServiceNowGatewayCI(BaseModel):
-    """ServiceNow network gateway configuration item model."""
+    """ServiceNow network gateway configuration item model.
+
+    Note: sys_id is optional and should NOT be provided on create.
+    ServiceNow auto-generates sys_id. Use u_unifi_source_id for tracking source.
+    See docs/servicenow_constraints.md for assumptions.
+    """
 
     model_config = ConfigDict(extra="allow")  # Allow additional fields from API
 
-    sys_id: str = Field(..., description="Unique system identifier")
+    sys_id: str | None = Field(
+        None,
+        description="ServiceNow system identifier (auto-generated, for updates only)",
+    )
+    u_unifi_source_id: str = Field(
+        ..., description="UniFi source identifier (required, for tracking)"
+    )
     name: str = Field(..., description="Gateway name")
     ip_address: str = Field(..., description="IP address")
     hostname: str = Field(..., description="Hostname")
@@ -20,42 +31,85 @@ class ServiceNowGatewayCI(BaseModel):
 
 
 class ServiceNowLocation(BaseModel):
-    """ServiceNow location/group record model."""
+    """ServiceNow location/group record model.
+
+    Note: sys_id is optional and should NOT be provided on create.
+    ServiceNow auto-generates sys_id. Use u_unifi_source_id for tracking source.
+    See docs/servicenow_constraints.md for assumptions.
+    """
 
     model_config = ConfigDict(extra="allow")  # Allow additional fields from API
 
-    sys_id: str = Field(..., description="Unique system identifier")
+    sys_id: str | None = Field(
+        None,
+        description="ServiceNow system identifier (auto-generated, for updates only)",
+    )
+    u_unifi_source_id: str = Field(
+        ..., description="UniFi source identifier (required, for tracking)"
+    )
     name: str = Field(..., description="Location name")
     description: str = Field(..., description="Location description")
     timezone: str = Field(..., description="Timezone")
-    host_id: str | None = Field(None, description="Foreign key to gateway")
+    host_id: str | None = Field(
+        None, description="Foreign key to gateway (sys_id reference)"
+    )
 
 
 class ServiceNowNetworkDeviceCI(BaseModel):
-    """ServiceNow network device configuration item model."""
+    """ServiceNow network device configuration item model.
+
+    Note: sys_id is optional and should NOT be provided on create.
+    ServiceNow auto-generates sys_id. Use u_unifi_source_id for tracking source.
+    See docs/servicenow_constraints.md for assumptions.
+    """
 
     model_config = ConfigDict(extra="allow")  # Allow additional fields from API
 
-    sys_id: str = Field(..., description="Unique system identifier")
+    sys_id: str | None = Field(
+        None,
+        description="ServiceNow system identifier (auto-generated, for updates only)",
+    )
+    u_unifi_source_id: str = Field(
+        ..., description="UniFi source identifier (required, for tracking)"
+    )
     name: str = Field(..., description="Device name")
     mac_address: str = Field(..., description="MAC address")
     serial_number: str | None = Field(None, description="Serial number")
     model: str | None = Field(None, description="Device model")
-    site_id: str | None = Field(None, description="Foreign key to site")
-    host_id: str | None = Field(None, description="Foreign key to host")
+    site_id: str | None = Field(
+        None, description="Foreign key to site (sys_id reference)"
+    )
+    host_id: str | None = Field(
+        None, description="Foreign key to host (sys_id reference)"
+    )
 
 
 class ServiceNowEndpoint(BaseModel):
-    """ServiceNow endpoint/client record model."""
+    """ServiceNow endpoint/client record model.
+
+    Note: sys_id is optional and should NOT be provided on create.
+    ServiceNow auto-generates sys_id. Use u_unifi_source_id for tracking source.
+    See docs/servicenow_constraints.md for assumptions.
+    """
 
     model_config = ConfigDict(extra="allow")  # Allow additional fields from API
 
-    sys_id: str = Field(..., description="Unique system identifier")
+    sys_id: str | None = Field(
+        None,
+        description="ServiceNow system identifier (auto-generated, for updates only)",
+    )
+    u_unifi_source_id: str = Field(
+        ..., description="UniFi source identifier (required, for tracking)"
+    )
     hostname: str = Field(..., description="Hostname")
     ip_address: str = Field(..., description="IP address")
     mac_address: str = Field(..., description="MAC address")
     device_type: str | None = Field(
         None, description="Device type (computer, phone, IoT, etc.)"
     )
-    site_id: str | None = Field(None, description="Foreign key to site")
-    device_id: str | None = Field(None, description="Foreign key to device")
+    site_id: str | None = Field(
+        None, description="Foreign key to site (sys_id reference)"
+    )
+    device_id: str | None = Field(
+        None, description="Foreign key to device (sys_id reference)"
+    )

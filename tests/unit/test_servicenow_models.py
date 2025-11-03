@@ -16,7 +16,7 @@ class TestServiceNowGatewayCI:
     def test_gateway_ci_validates_with_minimal_data(self):
         """Test that ServiceNowGatewayCI validates with minimal required fields."""
         gateway_data = {
-            "sys_id": "test-gateway-id",
+            "u_unifi_source_id": "test-gateway-id",
             "name": "Test Gateway",
             "ip_address": "192.168.1.1",
             "hostname": "gateway.example.com",
@@ -30,7 +30,7 @@ class TestServiceNowGatewayCI:
     def test_gateway_ci_has_flat_schema(self):
         """Test that ServiceNowGatewayCI has flat schema (no nesting)."""
         gateway_data = {
-            "sys_id": "test-gateway-id",
+            "u_unifi_source_id": "test-gateway-id",
             "name": "Test Gateway",
             "ip_address": "192.168.1.1",
             "hostname": "gateway.example.com",
@@ -48,7 +48,7 @@ class TestServiceNowGatewayCI:
     def test_gateway_ci_handles_optional_fields(self):
         """Test that optional fields are handled gracefully."""
         gateway_data = {
-            "sys_id": "test-gateway-id",
+            "u_unifi_source_id": "test-gateway-id",
             "name": "Test Gateway",
             "ip_address": "192.168.1.1",
             "hostname": "gateway.example.com",
@@ -75,7 +75,7 @@ class TestServiceNowLocation:
     def test_location_validates_with_minimal_data(self):
         """Test that ServiceNowLocation validates with minimal required fields."""
         location_data = {
-            "sys_id": "test-location-id",
+            "u_unifi_source_id": "test-location-id",
             "name": "Test Location",
             "description": "Test location description",
             "timezone": "America/New_York",
@@ -89,7 +89,7 @@ class TestServiceNowLocation:
     def test_location_has_flat_schema(self):
         """Test that ServiceNowLocation has flat schema (no nesting)."""
         location_data = {
-            "sys_id": "test-location-id",
+            "u_unifi_source_id": "test-location-id",
             "name": "Test Location",
             "description": "Test location description",
             "timezone": "America/New_York",
@@ -116,7 +116,7 @@ class TestServiceNowNetworkDeviceCI:
     def test_network_device_ci_validates_with_minimal_data(self):
         """Test that ServiceNowNetworkDeviceCI validates with minimal required fields."""
         device_data = {
-            "sys_id": "test-device-id",
+            "u_unifi_source_id": "test-device-id",
             "name": "Test Device",
             "mac_address": "00:11:22:33:44:55",
         }
@@ -128,7 +128,7 @@ class TestServiceNowNetworkDeviceCI:
     def test_network_device_ci_has_flat_schema(self):
         """Test that ServiceNowNetworkDeviceCI has flat schema (no nesting)."""
         device_data = {
-            "sys_id": "test-device-id",
+            "u_unifi_source_id": "test-device-id",
             "name": "Test Device",
             "mac_address": "00:11:22:33:44:55",
             "serial_number": "ABC123",
@@ -159,7 +159,7 @@ class TestServiceNowEndpoint:
     def test_endpoint_validates_with_minimal_data(self):
         """Test that ServiceNowEndpoint validates with minimal required fields."""
         endpoint_data = {
-            "sys_id": "test-endpoint-id",
+            "u_unifi_source_id": "test-endpoint-id",
             "hostname": "test-client",
             "ip_address": "192.168.1.100",
             "mac_address": "00:11:22:33:44:55",
@@ -173,7 +173,7 @@ class TestServiceNowEndpoint:
     def test_endpoint_has_flat_schema(self):
         """Test that ServiceNowEndpoint has flat schema (no nesting)."""
         endpoint_data = {
-            "sys_id": "test-endpoint-id",
+            "u_unifi_source_id": "test-endpoint-id",
             "hostname": "test-client",
             "ip_address": "192.168.1.100",
             "mac_address": "00:11:22:33:44:55",

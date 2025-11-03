@@ -36,7 +36,7 @@ def main():
         # Create test gateway CI
         print("\n2. Creating test gateway CI record...")
         test_gateway = ServiceNowGatewayCI(
-            sys_id="smoke_test_gateway_001",
+            u_unifi_source_id="smoke_test_gateway_001",  # Source ID, not sys_id
             name="Smoke Test Gateway",
             ip_address="192.168.1.1",
             hostname="smoke-test-gateway.example.com",

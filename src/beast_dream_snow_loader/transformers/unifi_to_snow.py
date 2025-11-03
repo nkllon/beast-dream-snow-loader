@@ -37,8 +37,8 @@ def transform_host(unifi_host: UniFiHost) -> ServiceNowGatewayCI:
     mapped_data = apply_field_mapping(host_dict, mappings)
 
     # Ensure required fields are present (fallbacks)
-    if "sys_id" not in mapped_data:
-        mapped_data["sys_id"] = unifi_host.id
+    if "u_unifi_source_id" not in mapped_data:
+        mapped_data["u_unifi_source_id"] = unifi_host.id
     if "ip_address" not in mapped_data:
         mapped_data["ip_address"] = unifi_host.ipAddress
     if "hostname" not in mapped_data and unifi_host.reportedState:
@@ -81,14 +81,15 @@ def transform_site(unifi_site: UniFiSite) -> ServiceNowLocation:
     mapped_data = apply_field_mapping(site_dict, mappings)
 
     # Ensure required fields are present (fallbacks)
-    if "sys_id" not in mapped_data:
-        mapped_data["sys_id"] = unifi_site.siteId
+    if "u_unifi_source_id" not in mapped_data:
+        mapped_data["u_unifi_source_id"] = unifi_site.siteId
     if "name" not in mapped_data and unifi_site.meta:
         mapped_data["name"] = unifi_site.meta.name
     if "description" not in mapped_data and unifi_site.meta:
         mapped_data["description"] = unifi_site.meta.desc
     if "timezone" not in mapped_data and unifi_site.meta:
         mapped_data["timezone"] = unifi_site.meta.timezone
+    # Note: host_id relationship handled separately (two-phase linking)
 
     # Validate and return ServiceNow model
     return ServiceNowLocation(**mapped_data)
@@ -113,8 +114,8 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
     mapped_data = apply_field_mapping(device_dict, mappings)
 
     # Ensure required fields are present
-    if "sys_id" not in mapped_data:
-        mapped_data["sys_id"] = unifi_device.hostId
+    if "u_unifi_source_id" not in mapped_data:
+        mapped_data["u_unifi_source_id"] = unifi_device.hostId
     if "name" not in mapped_data:
         mapped_data["name"] = unifi_device.hostId  # Fallback to hostId if no name
     if "mac_address" not in mapped_data:
@@ -125,6 +126,7 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
         else:
             # Required field - use placeholder if not available
             mapped_data["mac_address"] = "unknown"
+    # Note: Relationships (host_id, site_id) handled separately (two-phase linking)
 
     # Validate and return ServiceNow model
     return ServiceNowNetworkDeviceCI(**mapped_data)
@@ -149,15 +151,16 @@ def transform_client(unifi_client: UniFiClient) -> ServiceNowEndpoint:
     mapped_data = apply_field_mapping(client_dict, mappings)
 
     # Ensure required fields are present
-    if "sys_id" not in mapped_data:
-        # Generate sys_id from hostname or MAC if needed
-        mapped_data["sys_id"] = unifi_client.hostname or unifi_client.mac
+    if "u_unifi_source_id" not in mapped_data:
+        # Generate source ID from hostname or MAC if needed
+        mapped_data["u_unifi_source_id"] = unifi_client.hostname or unifi_client.mac
     if "hostname" not in mapped_data:
         mapped_data["hostname"] = unifi_client.hostname
     if "ip_address" not in mapped_data:
         mapped_data["ip_address"] = unifi_client.ip
     if "mac_address" not in mapped_data:
         mapped_data["mac_address"] = unifi_client.mac
+    # Note: Relationships (site_id, device_id) handled separately (two-phase linking)
 
     # Validate and return ServiceNow model
     return ServiceNowEndpoint(**mapped_data)
