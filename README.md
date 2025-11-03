@@ -99,7 +99,7 @@ uv pip install beast-dream-snow-loader
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Get started in 5 minutes
 - **[MVP Features](docs/MVP_FEATURES.md)** - Complete feature list
 - **[Release Notes](RELEASE_NOTES.md)** - What's new and what's planned
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - PyPI and Cloudflare setup
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - PyPI and SonarCloud setup
 - **[ServiceNow Setup](docs/pdi_setup.md)** - REST API and plugin activation
 - **[Table Requirements](docs/table_requirements.md)** - Plugin dependencies and verification
 - **[Constraints & Assumptions](docs/servicenow_constraints.md)** - ServiceNow integration details

@@ -50,57 +50,67 @@ twine upload dist/*
 - Use semantic versioning (MAJOR.MINOR.PATCH)
 - Create GitHub release with matching tag
 
-## Cloudflare Configuration
+## SonarCloud Configuration
 
-### Option 1: Cloudflare Pages (Documentation Site)
+### Initial Setup
 
-If you want to host documentation on Cloudflare Pages:
+1. **Create SonarCloud Account**:
+   - Go to https://sonarcloud.io
+   - Sign in with GitHub account
+   - Authorize SonarCloud access to GitHub repositories
 
-1. **Connect Repository**:
-   - Go to Cloudflare Dashboard → Pages
-   - Connect repository `nkllon/beast-dream-snow-loader`
-   - Select branch (usually `main`)
+2. **Create Project**:
+   - Go to SonarCloud Dashboard → Projects
+   - Click "Add Project" → "From GitHub"
+   - Select organization: `nkllon`
+   - Select repository: `beast-dream-snow-loader`
+   - Choose pricing plan (free for open source)
 
-2. **Build Configuration**:
-   - **Framework preset**: None (or GitBook/Docusaurus if using)
-   - **Build command**: (leave empty or configure if using docs generator)
-   - **Output directory**: `docs/` (if using static docs)
+3. **Configure Project**:
+   - **Project Key**: `nkllon_beast-dream-snow-loader`
+   - **Organization**: `nkllon`
+   - **Language**: Python
+   - SonarCloud will auto-detect Python settings
 
-3. **Custom Domain** (Optional):
-   - Add custom domain in Cloudflare Pages settings
-   - Configure DNS records as needed
+4. **Add GitHub Secret**:
+   - Go to GitHub repository → Settings → Secrets and variables → Actions
+   - Add secret: `SONAR_TOKEN`
+   - Get token from SonarCloud → My Account → Security → Generate Token
+   - Copy token and add as `SONAR_TOKEN` secret
 
-### Option 2: Cloudflare DNS (Domain Configuration)
+### Workflow Configuration
 
-If you have a custom domain for the project:
+The repository includes a SonarCloud workflow (`.github/workflows/sonarcloud.yml`) that:
+- Runs on push to `main` branch
+- Runs on pull requests
+- Collects test coverage
+- Uploads analysis to SonarCloud
 
-1. **Add DNS Records**:
-   - Go to Cloudflare Dashboard → DNS
-   - Add A/AAAA records for domain
-   - Add CNAME records for subdomains
+### SonarCloud Project Settings
 
-2. **SSL/TLS**:
-   - Set SSL/TLS mode to "Full" or "Full (strict)"
-   - Enable automatic HTTPS rewrites
+1. **Quality Gates**:
+   - Default quality gate is usually sufficient
+   - Can customize rules for project-specific needs
 
-3. **Security**:
-   - Enable WAF rules
-   - Configure rate limiting if needed
-   - Set up security headers
+2. **Coverage**:
+   - Coverage is collected via pytest with `--cov` flag
+   - Coverage reports are automatically uploaded
 
-### Option 3: Cloudflare Workers (API Proxy)
+3. **Analysis**:
+   - Analysis runs automatically on each push
+   - Results appear in SonarCloud dashboard
+   - Issues and code smells are tracked
 
-If you need to proxy API requests:
+### Verification
 
-1. **Create Worker**:
-   - Go to Cloudflare Dashboard → Workers
-   - Create new worker
-   - Configure routing rules
+1. **Check Workflow**:
+   - Go to GitHub Actions tab
+   - Verify "SonarCloud Analysis" workflow runs successfully
 
-2. **Deploy**:
-   - Use Wrangler CLI or Cloudflare Dashboard
-   - Configure environment variables
-   - Set up routes
+2. **Check SonarCloud**:
+   - Visit https://sonarcloud.io/project/overview?id=nkllon_beast-dream-snow-loader
+   - Verify analysis results appear
+   - Check code coverage and quality metrics
 
 ## Post-Deployment Verification
 
@@ -121,20 +131,22 @@ If you need to proxy API requests:
    python -c "import beast_dream_snow_loader; print(beast_dream_snow_loader.__version__)"
    ```
 
-### Cloudflare
+### SonarCloud
 
-1. **Test DNS Resolution**:
-   ```bash
-   dig your-domain.com
-   ```
+1. **Check Analysis Results**:
+   - Visit https://sonarcloud.io/project/overview?id=nkllon_beast-dream-snow-loader
+   - Verify code analysis appears
+   - Check quality gate status
 
-2. **Test SSL/TLS**:
-   - Visit https://your-domain.com
-   - Verify SSL certificate is valid
+2. **Review Issues**:
+   - Go to Issues tab in SonarCloud
+   - Review code smells, bugs, and vulnerabilities
+   - Address critical issues
 
-3. **Test Pages**:
-   - Visit Cloudflare Pages URL
-   - Verify documentation loads correctly
+3. **Check Coverage**:
+   - Go to Coverage tab
+   - Verify test coverage is being reported
+   - Aim for >80% coverage
 
 ## Troubleshooting
 
@@ -144,17 +156,18 @@ If you need to proxy API requests:
 - **Package already exists**: Increment version number
 - **Build fails**: Check `pyproject.toml` syntax and dependencies
 
-### Cloudflare Issues
+### SonarCloud Issues
 
-- **DNS not resolving**: Check DNS records and propagation
-- **SSL errors**: Verify SSL/TLS mode and certificate
-- **Pages not building**: Check build configuration and repository access
+- **Analysis not running**: Check GitHub Actions workflow is enabled
+- **Token errors**: Verify `SONAR_TOKEN` secret is set correctly
+- **Coverage not reported**: Ensure pytest runs with `--cov` flag
+- **Project not found**: Verify project is created in SonarCloud dashboard
 
 ## Security Considerations
 
 1. **API Tokens**: Never commit PyPI API tokens to repository
 2. **Trusted Publishing**: Use GitHub Actions trusted publishing when possible
-3. **Environment Variables**: Store secrets in GitHub Secrets or Cloudflare Secrets
-4. **DNS Security**: Enable DNSSEC in Cloudflare
-5. **Rate Limiting**: Configure rate limits for API endpoints
+3. **Environment Variables**: Store secrets in GitHub Secrets
+4. **SonarCloud Token**: Store `SONAR_TOKEN` in GitHub Secrets (never commit)
+5. **Code Quality**: Address security issues found by SonarCloud analysis
 
