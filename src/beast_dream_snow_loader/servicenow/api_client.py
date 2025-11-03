@@ -8,10 +8,12 @@ from typing import Any
 import requests  # type: ignore
 
 # Cluster-wide rule: Never create .env files in project directories.
-# Code is execution-context-agnostic: it doesn't know WHO is executing it or in WHAT context.
+# Execution context detection & graceful degradation:
+# - Beast node: Has access to beast services (1Password, etc.) or they are provisionable
+# - OSS user: No beast services required - this is the public-facing default for this repo
+# Code detects available services (1Password CLI, etc.) and uses them if present.
+# Code gracefully degrades when beast services aren't available (OSS user case).
 # Code reads from os.getenv() which automatically uses the executing user's system environment.
-# The executing user/system is responsible for making environment variables available.
-# Code does not detect execution context - it just reads from os.getenv().
 
 
 def _is_1password_available() -> bool:

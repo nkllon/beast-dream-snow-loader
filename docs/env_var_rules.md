@@ -12,19 +12,32 @@
 
 **Enforcement:** Never create `.env` files (at least without asking). Violates cluster-wide policy.
 
-## Principle: Execution Context Agnosticism
+## Principle: Execution Context Detection & Graceful Degradation
 
-**The code does not know WHO is executing it or in WHAT context.**
+**The code does not assume execution context, but can detect available capabilities and use them if present.**
 
-The code is **execution-context-agnostic**. It reads from `os.getenv()`, which automatically reads from the **executing user's** system environment, regardless of:
-- **WHO** the executing user is (beast node, local developer, CI/CD system, production deployment user, etc.)
-- **WHAT** execution context it's running in (beast cluster, local dev, CI/CD pipeline, production server, etc.)
-- **WHERE** the executing user's home directory is (the code doesn't need to know)
-- **HOW** the environment variables got there (shell config, deployment system, CI/CD injection, etc.)
+### Execution Contexts
 
-The code does not detect or know its execution context. It just reads from the system environment of whoever is executing it.
+**Beast Node/Cluster:**
+- Has access to beast node services (1Password, etc.) or they are provisionable
+- Being part of a cluster (even a beast cluster of 1) has qualities and capabilities
+- Code can assume beast services are available or provisionable
 
-**Key insight:** "All environment variables must be in the home directory of the executing user" - but the code doesn't know or care who that executing user is. It just reads from `os.getenv()` which automatically uses the executing user's environment.
+**OSS User (Public-Facing Default):**
+- No beast node services required
+- Works with just system environment variables
+- This is the **public-facing stance for this repo**
+- Code gracefully degrades when beast services aren't available
+
+### Implementation
+
+The code:
+- **Detects** available services (1Password CLI, etc.) and uses them if present
+- **Gracefully degrades** when beast services aren't available (OSS user case)
+- **Does not assume** execution context - it detects what's available
+- **Defaults to OSS user** behavior (works without beast services)
+
+**Key insight:** "All environment variables must be in the home directory of the executing user" - the code reads from `os.getenv()` which automatically uses the executing user's environment. The code detects available services and uses them if present, but works without them.
 
 ### Priority Order
 
@@ -36,14 +49,16 @@ The code does not detect or know its execution context. It just reads from the s
 
 ## When to Use Each
 
-### Development/Testing
-- User/system sets environment variables in system environment (via shell config, session, etc.)
-- Code reads from `os.getenv()` - does not care how they were set
+### Beast Node/Cluster
+- **1Password CLI** (preferred) - beast services are available or provisionable
+- Code detects available services and uses them if present
+- Environment variables in executing user's home directory (cluster-wide policy)
 
-### Production
-- Use 1Password CLI (preferred) - code integrates with 1Password CLI
-- Or user/system sets environment variables in system environment (via deployment system, etc.)
-- Never use project-level `.env` files (cluster-wide policy violation)
+### OSS User (Public-Facing Default)
+- **System environment variables** - works without beast services
+- Set via shell config, deployment system, CI/CD, etc.
+- Code gracefully degrades when beast services aren't available
+- This is the **public-facing stance for this repo**
 
 ### CI/CD
 - CI/CD system sets environment variables in system environment

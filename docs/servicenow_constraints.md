@@ -15,10 +15,13 @@
 **Enforcement:**
 - Never create `.env` files in project directories (cluster-wide policy violation)
 - Never use `python-dotenv` or any library to load `.env` files
-- Code is execution-context-agnostic: it doesn't know WHO is executing it or in WHAT context
+- **Execution context detection & graceful degradation:**
+  - **Beast node**: Has access to beast services (1Password, etc.) or they are provisionable
+  - **OSS user**: No beast services required - this is the **public-facing default** for this repo
+- Code detects available services (1Password CLI, etc.) and uses them if present
+- Code gracefully degrades when beast services aren't available (OSS user case)
 - Code reads from system environment via `os.getenv()` only - automatically uses executing user's environment
 - The executing user/system is responsible for making environment variables available in the system environment
-- Code does not detect execution context (beast node, local dev, CI/CD, production, etc.) - it just reads from `os.getenv()`
 
 **Can Violate:** No - this is a cluster-wide policy constraint.
 
