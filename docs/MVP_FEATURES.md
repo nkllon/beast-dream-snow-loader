@@ -112,3 +112,11 @@
    - Bulk data loading
    - Better error handling for large datasets
 
+8. **Observatory Gateway Experiment** 🔄
+   - Cloudflare Workers gateway for public API access
+   - Performance benchmarking (gateway vs direct)
+   - Rate limiting behavior testing
+   - Observatory infrastructure (observatory.nkllon.com)
+   - **Purpose:** Learning, benchmarking, lab experimentation
+   - **Not blocking:** Experimental enhancement, valuable for data/insights
+
