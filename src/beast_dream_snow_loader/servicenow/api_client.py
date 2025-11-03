@@ -11,36 +11,47 @@ load_dotenv()
 
 
 class ServiceNowAPIClient:
-    """ServiceNow REST API client with authentication and basic operations."""
+    """ServiceNow REST API client with authentication and basic operations.
+
+    Supports multiple authentication methods (in order of preference):
+    1. OAuth 2.0 token (Bearer token) - most secure
+    2. API key (Basic Auth with API key as password) - recommended
+    3. Basic Auth (username/password) - fallback
+
+    See docs/servicenow_constraints.md for assumptions.
+    """
 
     def __init__(
         self,
         instance: str | None = None,
         username: str | None = None,
         password: str | None = None,
+        api_key: str | None = None,
+        oauth_token: str | None = None,
     ):
         """Initialize ServiceNow API client.
 
         Args:
             instance: ServiceNow instance URL (e.g., 'dev12345.service-now.com')
-            username: ServiceNow username
-            password: ServiceNow password
+            username: ServiceNow username (for Basic Auth or API key)
+            password: ServiceNow password (for Basic Auth, fallback only)
+            api_key: ServiceNow API key (preferred, used as password in Basic Auth)
+            oauth_token: OAuth 2.0 access token (most secure, Bearer token)
+
+        Authentication Priority:
+        1. OAuth token (SERVICENOW_OAUTH_TOKEN env var) - Bearer token
+        2. API key (SERVICENOW_API_KEY env var) - Basic Auth with API key as password
+        3. Username/password (SERVICENOW_USERNAME/SERVICENOW_PASSWORD) - Basic Auth fallback
 
         Credentials are loaded from:
-        1. 1Password CLI (if available) - TODO: implement
-        2. Environment variables (SERVICENOW_INSTANCE, SERVICENOW_USERNAME, SERVICENOW_PASSWORD)
-        3. Function arguments (highest priority)
+        1. Function arguments (highest priority)
+        2. Environment variables
+        3. 1Password CLI (if available) - TODO: implement
         """
         self.instance = instance or os.getenv("SERVICENOW_INSTANCE", "")
-        self.username = username or os.getenv("SERVICENOW_USERNAME", "")
-        self.password = password or os.getenv("SERVICENOW_PASSWORD", "")
 
         if not self.instance:
             raise ValueError("ServiceNow instance URL is required")
-        if not self.username:
-            raise ValueError("ServiceNow username is required")
-        if not self.password:
-            raise ValueError("ServiceNow password is required")
 
         # Ensure instance URL is clean (no https:// prefix)
         self.instance = (
@@ -49,12 +60,38 @@ class ServiceNowAPIClient:
 
         self.base_url = f"https://{self.instance}/api/now"
         self.session = requests.Session()
-        self.session.auth = (self.username, self.password)
         self.session.headers.update(
             {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
+        )
+
+        # Authentication: Priority 1 - OAuth Token (Bearer token)
+        oauth_token = oauth_token or os.getenv("SERVICENOW_OAUTH_TOKEN", "")
+        if oauth_token:
+            self.session.headers["Authorization"] = f"Bearer {oauth_token}"
+            return
+
+        # Authentication: Priority 2 - API Key (Basic Auth with API key as password)
+        api_key = api_key or os.getenv("SERVICENOW_API_KEY", "")
+        username = username or os.getenv("SERVICENOW_USERNAME", "")
+        if api_key and username:
+            self.session.auth = (username, api_key)
+            return
+
+        # Authentication: Priority 3 - Basic Auth (username/password) - Fallback
+        password = password or os.getenv("SERVICENOW_PASSWORD", "")
+        if username and password:
+            self.session.auth = (username, password)
+            return
+
+        # No valid authentication found
+        raise ValueError(
+            "ServiceNow authentication required. Provide one of:\n"
+            "  - OAuth token: SERVICENOW_OAUTH_TOKEN env var\n"
+            "  - API key: SERVICENOW_API_KEY + SERVICENOW_USERNAME env vars\n"
+            "  - Username/password: SERVICENOW_USERNAME + SERVICENOW_PASSWORD env vars"
         )
 
     def create_record(self, table: str, data: dict[str, Any]) -> dict[str, Any]:

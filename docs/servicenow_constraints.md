@@ -64,13 +64,20 @@
 
 ---
 
-### 5. Authentication via Basic Auth ✅
+### 5. Authentication: API Key or OAuth Token (Preferred) ✅
 
-**Assumption:** ServiceNow instance supports basic authentication (username/password).
+**Assumption:** ServiceNow instance supports API key authentication (via Basic Auth with API key as password) or OAuth 2.0 token authentication.
 
-**Rationale:** Standard ServiceNow authentication. OAuth can be added later if needed.
+**Preferred Methods:**
+1. **API Key** (Basic Auth with API key as password) - `SERVICENOW_API_KEY` env var
+2. **OAuth Token** (Bearer token) - `SERVICENOW_OAUTH_TOKEN` env var
+3. **Basic Auth** (username/password) - Fallback for backwards compatibility
 
-**Impact if Violated:** Would need to implement OAuth or other authentication method.
+**Rationale:** API keys and OAuth tokens are more secure than username/password. ServiceNow supports both:
+- API keys via Basic Auth (API key used as password)
+- OAuth 2.0 tokens (Bearer token authentication)
+
+**Impact if Violated:** Would need to use username/password (less secure, not recommended for production).
 
 ---
 

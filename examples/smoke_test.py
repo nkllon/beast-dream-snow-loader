@@ -54,7 +54,15 @@ def main():
 
     except ValueError as e:
         print(f"\n❌ Configuration Error: {e}")
-        print("\nPlease set environment variables:")
+        print("\nPlease set environment variables (choose one authentication method):")
+        print("\nOption 1 - OAuth Token (Most Secure):")
+        print("  export SERVICENOW_INSTANCE='your-instance.service-now.com'")
+        print("  export SERVICENOW_OAUTH_TOKEN='your-oauth-token'")
+        print("\nOption 2 - API Key (Recommended):")
+        print("  export SERVICENOW_INSTANCE='your-instance.service-now.com'")
+        print("  export SERVICENOW_USERNAME='your-username'")
+        print("  export SERVICENOW_API_KEY='your-api-key'")
+        print("\nOption 3 - Username/Password (Fallback):")
         print("  export SERVICENOW_INSTANCE='your-instance.service-now.com'")
         print("  export SERVICENOW_USERNAME='your-username'")
         print("  export SERVICENOW_PASSWORD='your-password'")
