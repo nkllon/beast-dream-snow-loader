@@ -89,7 +89,12 @@ def transform_site(unifi_site: UniFiSite) -> ServiceNowLocation:
         mapped_data["description"] = unifi_site.meta.desc
     if "timezone" not in mapped_data and unifi_site.meta:
         mapped_data["timezone"] = unifi_site.meta.timezone
-    # Note: host_id relationship handled separately (two-phase linking)
+
+    # Set host_id relationship (source ID, will be converted to sys_id in Phase 2)
+    # Note: host_id is set to the UniFi host ID (source ID), not sys_id
+    # The loader will convert this to sys_id in Phase 2 of two-phase linking
+    if "host_id" not in mapped_data:
+        mapped_data["host_id"] = unifi_site.hostId
 
     # Validate and return ServiceNow model
     return ServiceNowLocation(**mapped_data)
@@ -126,7 +131,14 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
         else:
             # Required field - use placeholder if not available
             mapped_data["mac_address"] = "unknown"
-    # Note: Relationships (host_id, site_id) handled separately (two-phase linking)
+
+    # Set relationship fields (source IDs, will be converted to sys_ids in Phase 2)
+    # Note: These are set to UniFi source IDs, not sys_ids
+    # The loader will convert these to sys_ids in Phase 2 of two-phase linking
+    if "host_id" not in mapped_data:
+        mapped_data["host_id"] = unifi_device.hostId
+    # Note: site_id relationship would need to come from UniFi device data if available
+    # For now, devices reference hosts but not directly sites
 
     # Validate and return ServiceNow model
     return ServiceNowNetworkDeviceCI(**mapped_data)
@@ -160,7 +172,14 @@ def transform_client(unifi_client: UniFiClient) -> ServiceNowEndpoint:
         mapped_data["ip_address"] = unifi_client.ip
     if "mac_address" not in mapped_data:
         mapped_data["mac_address"] = unifi_client.mac
-    # Note: Relationships (site_id, device_id) handled separately (two-phase linking)
+
+    # Set relationship fields (source IDs, will be converted to sys_ids in Phase 2)
+    # Note: These are set to UniFi source IDs, not sys_ids
+    # The loader will convert these to sys_ids in Phase 2 of two-phase linking
+    if "site_id" not in mapped_data and unifi_client.siteId:
+        mapped_data["site_id"] = unifi_client.siteId
+    if "device_id" not in mapped_data and unifi_client.deviceId:
+        mapped_data["device_id"] = unifi_client.deviceId
 
     # Validate and return ServiceNow model
     return ServiceNowEndpoint(**mapped_data)
