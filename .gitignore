@@ -10,3 +10,4 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+docs/LLM_PROMPT_RESUME_EMAIL.md
