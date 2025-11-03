@@ -55,31 +55,42 @@ def _is_1password_signed_in() -> bool:
 
 
 def _get_1password_credential(
-    item_name: str, field: str, vault: str = "Beastmaster"
+    item_name: str,
+    field: str,
+    vault: str = "Beastmaster",
+    prompt_if_needed: bool = False,
 ) -> str | None:
     """Get credential from 1Password CLI.
 
     Only retrieves credential if user is already signed in.
-    Does not attempt to sign in if user is not signed in.
+    Optionally prompts for sign-in if not signed in and prompt_if_needed=True.
 
     Args:
         item_name: 1Password item name (e.g., "ServiceNow Dev Account")
         field: Field name (e.g., "username", "api_key", "password")
         vault: Vault name (default: "Beastmaster")
+        prompt_if_needed: If True, prompt for sign-in if not signed in (default: False)
 
     Returns:
         Credential value as string, or None if:
         - 1Password CLI not installed
-        - User not signed in (does not prompt for sign-in)
+        - User not signed in (and prompt_if_needed=False)
         - Item/field not found
         - Command fails for any reason
 
     Note:
-        This is a silent check - does not prompt for sign-in.
-        If user is not signed in, returns None and falls back to env vars.
+        By default, this is a silent check - does not prompt for sign-in.
+        Set prompt_if_needed=True to prompt for sign-in if not signed in.
     """
-    # Check if already signed in (silent check, no prompting)
+    # Check if already signed in
     if not _is_1password_signed_in():
+        if prompt_if_needed and _is_1password_available():
+            # Prompt for sign-in (unusual initialization scenario)
+            print(
+                "\n⚠️  1Password CLI available but not signed in.\n"
+                "   Credentials not found in environment variables.\n"
+                "   To sign in: run 'op signin'\n"
+            )
         return None
 
     try:
@@ -142,14 +153,24 @@ class ServiceNowAPIClient:
         3. 1Password CLI (if available AND signed in)
         """
         # Get instance URL (priority: arg → env → 1Password)
+        # Detect unusual initialization: no env vars AND 1Password available but not signed in
+        env_instance = os.getenv("SERVICENOW_INSTANCE", "")
+        has_env_vars = bool(env_instance)
+
         if instance:
             self.instance = instance
-        elif os.getenv("SERVICENOW_INSTANCE"):
-            self.instance = os.getenv("SERVICENOW_INSTANCE", "")
+        elif env_instance:
+            self.instance = env_instance
         else:
-            # Try 1Password (if available and signed in)
+            # No env vars - check if we should prompt for 1Password sign-in
+            should_prompt = (
+                not has_env_vars
+                and _is_1password_available()
+                and not _is_1password_signed_in()
+            )
+            # Try 1Password (prompt if unusual initialization scenario)
             op_instance = _get_1password_credential(
-                "ServiceNow Dev Account", "instance"
+                "ServiceNow Dev Account", "instance", prompt_if_needed=should_prompt
             )
             self.instance = op_instance or ""
 
@@ -173,22 +194,44 @@ class ServiceNowAPIClient:
         # Authentication: Priority 1 - API Key (Recommended for production)
         # Use service account user (named user, no UI login) with API key
         # Try: function arg → env var → 1Password
+        env_api_key = os.getenv("SERVICENOW_API_KEY", "")
+        env_username = os.getenv("SERVICENOW_USERNAME", "")
+        has_env_auth = bool(env_api_key and env_username)
+
         if api_key:
             api_key_value = api_key
-        elif os.getenv("SERVICENOW_API_KEY"):
-            api_key_value = os.getenv("SERVICENOW_API_KEY", "")
+        elif env_api_key:
+            api_key_value = env_api_key
         else:
+            # No env vars - check if we should prompt for 1Password sign-in
+            should_prompt = (
+                not has_env_auth
+                and _is_1password_available()
+                and not _is_1password_signed_in()
+            )
             api_key_value = (
-                _get_1password_credential("ServiceNow Dev Account", "api_key") or ""
+                _get_1password_credential(
+                    "ServiceNow Dev Account", "api_key", prompt_if_needed=should_prompt
+                )
+                or ""
             )
 
         if username:
             username_value = username
-        elif os.getenv("SERVICENOW_USERNAME"):
-            username_value = os.getenv("SERVICENOW_USERNAME", "")
+        elif env_username:
+            username_value = env_username
         else:
+            # No env vars - check if we should prompt for 1Password sign-in
+            should_prompt = (
+                not has_env_auth
+                and _is_1password_available()
+                and not _is_1password_signed_in()
+            )
             username_value = (
-                _get_1password_credential("ServiceNow Dev Account", "username") or ""
+                _get_1password_credential(
+                    "ServiceNow Dev Account", "username", prompt_if_needed=should_prompt
+                )
+                or ""
             )
 
         if api_key_value and username_value:
@@ -197,13 +240,27 @@ class ServiceNowAPIClient:
 
         # Authentication: Priority 2 - OAuth Token (Optional)
         # Try: function arg → env var → 1Password
+        env_oauth_token = os.getenv("SERVICENOW_OAUTH_TOKEN", "")
+        has_env_oauth = bool(env_oauth_token)
+
         if oauth_token:
             oauth_token_value = oauth_token
-        elif os.getenv("SERVICENOW_OAUTH_TOKEN"):
-            oauth_token_value = os.getenv("SERVICENOW_OAUTH_TOKEN", "")
+        elif env_oauth_token:
+            oauth_token_value = env_oauth_token
         else:
+            # No env vars - check if we should prompt for 1Password sign-in
+            should_prompt = (
+                not has_env_oauth
+                and _is_1password_available()
+                and not _is_1password_signed_in()
+            )
             oauth_token_value = (
-                _get_1password_credential("ServiceNow Dev Account", "oauth_token") or ""
+                _get_1password_credential(
+                    "ServiceNow Dev Account",
+                    "oauth_token",
+                    prompt_if_needed=should_prompt,
+                )
+                or ""
             )
 
         if oauth_token_value:
@@ -213,13 +270,25 @@ class ServiceNowAPIClient:
         # Authentication: Priority 3 - Basic Auth (username/password) - Development/testing only
         # NOT recommended for production - use service account with API key instead
         # Try: function arg → env var → 1Password
+        env_password = os.getenv("SERVICENOW_PASSWORD", "")
+        has_env_password = bool(env_password and env_username)
+
         if password:
             password_value = password
-        elif os.getenv("SERVICENOW_PASSWORD"):
-            password_value = os.getenv("SERVICENOW_PASSWORD", "")
+        elif env_password:
+            password_value = env_password
         else:
+            # No env vars - check if we should prompt for 1Password sign-in
+            should_prompt = (
+                not has_env_password
+                and _is_1password_available()
+                and not _is_1password_signed_in()
+            )
             password_value = (
-                _get_1password_credential("ServiceNow Dev Account", "password") or ""
+                _get_1password_credential(
+                    "ServiceNow Dev Account", "password", prompt_if_needed=should_prompt
+                )
+                or ""
             )
 
         if username_value and password_value:
