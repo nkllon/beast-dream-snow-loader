@@ -13,20 +13,22 @@ Run `scripts/check_table_requirements.py` to verify table availability on your S
 ### Required Tables
 
 1. **`cmdb_ci_network_gateway`** - Network gateway CI
-   - **Status:** ❌ Not available on PDI
-   - **Plugin Required:** Likely ITOM (IT Operations Management)
-   - **Reference:** ServiceNow KB KB1691523
+   - **Status:** ❌ Not available on PDI (requires plugin activation)
+   - **Plugin Required:** **CMDB CI Class Models** (`sn_cmdb_ci_class`)
+   - **Action:** Activate plugin in PDI (see Activation Instructions below)
 
 2. **`cmdb_location`** - Location records
-   - **Status:** ❌ Not available on PDI
-   - **Plugin Required:** Unknown (may be standard CMDB)
+   - **Status:** ❌ Not available on PDI (needs verification)
+   - **Plugin Required:** Unknown (may be standard CMDB or require plugin)
 
 3. **`cmdb_ci_network_gear`** - Network device CI
-   - **Status:** ❌ Not available on PDI
-   - **Plugin Required:** Likely ITOM
+   - **Status:** ❌ Not available on PDI (requires plugin activation)
+   - **Plugin Required:** **CMDB CI Class Models** (`sn_cmdb_ci_class`)
+   - **Note:** `cmdb_ci_netgear` exists but not `cmdb_ci_network_gear`
+   - **Action:** Activate plugin in PDI (see Activation Instructions below)
 
 4. **`cmdb_endpoint`** - Endpoint/client records
-   - **Status:** ❌ Not available on PDI
+   - **Status:** ❌ Not available on PDI (needs verification)
    - **Plugin Required:** Unknown (may be custom table)
 
 ### Base Table (Fallback)
@@ -38,18 +40,25 @@ Run `scripts/check_table_requirements.py` to verify table availability on your S
 
 ## Plugin Requirements
 
-### ITOM (IT Operations Management)
+### CMDB CI Class Models Plugin (REQUIRED)
 
-Many specific CI type tables require ITOM plugin to be installed/activated:
+**Plugin ID:** `sn_cmdb_ci_class`  
+**Plugin Name:** CMDB CI Class Models
+
+This plugin provides all new class models provided by ServiceNow, including:
 - `cmdb_ci_network_gateway`
 - `cmdb_ci_network_gear`
 - Other network device CI types
 
-**Reference:** ServiceNow KB article KB1691523 lists CI types requiring ITOM subscription.
+**Activation Required:** This plugin must be activated to access these specific CI type tables.
 
-### Discovery Plugin
+**Note:** This is separate from ITOM. ITOM licensing may be required for some CI types, but the CI class models themselves come from this plugin.
 
-Discovery plugin may also be required for some CI types, but this needs verification.
+### ITOM (IT Operations Management)
+
+ITOM may be required for certain CI types depending on licensing/subscription, but the **CMDB CI Class Models** plugin is what provides the table definitions.
+
+**Reference:** ServiceNow KB article KB1691523 lists CI types requiring ITOM subscription (for licensing, not table availability).
 
 ## Verification Methods
 
@@ -122,18 +131,46 @@ The loader currently:
 
 This allows the tool to work on instances without ITOM while still supporting ITOM-enabled instances.
 
+## Activation Instructions for PDI
+
+Since this is a development instance (PDI), you can activate the required plugin:
+
+### Activate CMDB CI Class Models Plugin
+
+1. **Log into your PDI:** `https://dev212392.service-now.com` (or your instance URL)
+2. **Navigate to Plugins:**
+   - Go to **System Definition** > **Plugins**
+   - Or search for "Plugins" in the filter navigator
+3. **Search for Plugin:**
+   - Search for **"CMDB CI Class Models"** or plugin ID `sn_cmdb_ci_class`
+4. **Activate Plugin:**
+   - Click on the plugin
+   - Click **Activate** button
+   - Wait for activation to complete (may take a few minutes)
+5. **Verify Tables Exist:**
+   - Run `scripts/check_table_requirements.py` to verify tables are now available
+   - Or query the tables directly via REST API
+
+After activation, the following tables should become available:
+- `cmdb_ci_network_gateway`
+- `cmdb_ci_network_gear`
+- Other network CI type tables
+
+### Alternative: Use Base Table (No Plugin Required)
+
+If you don't want to activate the plugin, the tool can use the base `cmdb_ci` table with `sys_class_name` field. This is already implemented as a fallback.
+
 ## Next Steps
 
-1. **Verify ITOM Requirements:**
-   - Check ServiceNow KB KB1691523 for definitive list
-   - Test on instance with ITOM installed
+1. **Activate Plugin in PDI:**
+   - Follow instructions above to activate `sn_cmdb_ci_class`
+   - Verify tables are available after activation
 
-2. **Document `cmdb_location` Requirements:**
-   - Verify if this is standard CMDB or requires plugin
-   - Check if it exists on instances without ITOM
+2. **Update Loader:**
+   - Update loader to use specific CI type tables once plugin is activated
+   - Remove fallback to base table (or keep as optional)
 
-3. **Enhance Table Detection:**
-   - Update loader to automatically detect available tables
-   - Provide clear error messages when tables are missing
-   - Suggest workarounds (base table vs. custom tables)
+3. **Document Production Requirements:**
+   - Document that production instances need `sn_cmdb_ci_class` plugin activated
+   - Or document that users can use base `cmdb_ci` table as fallback
 
