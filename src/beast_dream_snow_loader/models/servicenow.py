@@ -1,5 +1,7 @@
 """ServiceNow CMDB data models using Pydantic for validation."""
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -19,6 +21,9 @@ class ServiceNowGatewayCI(BaseModel):
     )
     u_unifi_source_id: str = Field(
         ..., description="UniFi source identifier (required, for tracking)"
+    )
+    u_unifi_raw_data: dict[str, Any] | None = Field(
+        None, description="Raw UniFi source data (JSON) for audit/reconciliation"
     )
     name: str = Field(..., description="Gateway name")
     ip_address: str = Field(..., description="IP address")
@@ -47,6 +52,9 @@ class ServiceNowLocation(BaseModel):
     u_unifi_source_id: str = Field(
         ..., description="UniFi source identifier (required, for tracking)"
     )
+    u_unifi_raw_data: dict[str, Any] | None = Field(
+        None, description="Raw UniFi source data (JSON) for audit/reconciliation"
+    )
     name: str = Field(..., description="Location name")
     description: str = Field(..., description="Location description")
     timezone: str = Field(..., description="Timezone")
@@ -71,6 +79,9 @@ class ServiceNowNetworkDeviceCI(BaseModel):
     )
     u_unifi_source_id: str = Field(
         ..., description="UniFi source identifier (required, for tracking)"
+    )
+    u_unifi_raw_data: dict[str, Any] | None = Field(
+        None, description="Raw UniFi source data (JSON) for audit/reconciliation"
     )
     name: str = Field(..., description="Device name")
     mac_address: str = Field(..., description="MAC address")
@@ -100,6 +111,9 @@ class ServiceNowEndpoint(BaseModel):
     )
     u_unifi_source_id: str = Field(
         ..., description="UniFi source identifier (required, for tracking)"
+    )
+    u_unifi_raw_data: dict[str, Any] | None = Field(
+        None, description="Raw UniFi source data (JSON) for audit/reconciliation"
     )
     hostname: str = Field(..., description="Hostname")
     ip_address: str = Field(..., description="IP address")

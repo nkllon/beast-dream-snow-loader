@@ -58,6 +58,10 @@ def transform_host(unifi_host: UniFiHost) -> ServiceNowGatewayCI:
             if "serialno" in hardware and "serial_number" not in mapped_data:
                 mapped_data["serial_number"] = hardware["serialno"]
 
+    # Preserve raw source data for audit/reconciliation
+    if "u_unifi_raw_data" not in mapped_data:
+        mapped_data["u_unifi_raw_data"] = unifi_host.model_dump()
+
     # Validate and return ServiceNow model
     return ServiceNowGatewayCI(**mapped_data)
 
@@ -95,6 +99,10 @@ def transform_site(unifi_site: UniFiSite) -> ServiceNowLocation:
     # The loader will convert this to sys_id in Phase 2 of two-phase linking
     if "host_id" not in mapped_data:
         mapped_data["host_id"] = unifi_site.hostId
+
+    # Preserve raw source data for audit/reconciliation
+    if "u_unifi_raw_data" not in mapped_data:
+        mapped_data["u_unifi_raw_data"] = unifi_site.model_dump()
 
     # Validate and return ServiceNow model
     return ServiceNowLocation(**mapped_data)
@@ -140,6 +148,10 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
     # Note: site_id relationship would need to come from UniFi device data if available
     # For now, devices reference hosts but not directly sites
 
+    # Preserve raw source data for audit/reconciliation
+    if "u_unifi_raw_data" not in mapped_data:
+        mapped_data["u_unifi_raw_data"] = unifi_device.model_dump()
+
     # Validate and return ServiceNow model
     return ServiceNowNetworkDeviceCI(**mapped_data)
 
@@ -180,6 +192,10 @@ def transform_client(unifi_client: UniFiClient) -> ServiceNowEndpoint:
         mapped_data["site_id"] = unifi_client.siteId
     if "device_id" not in mapped_data and unifi_client.deviceId:
         mapped_data["device_id"] = unifi_client.deviceId
+
+    # Preserve raw source data for audit/reconciliation
+    if "u_unifi_raw_data" not in mapped_data:
+        mapped_data["u_unifi_raw_data"] = unifi_client.model_dump()
 
     # Validate and return ServiceNow model
     return ServiceNowEndpoint(**mapped_data)
