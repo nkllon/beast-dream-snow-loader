@@ -58,11 +58,13 @@
 **PDI Finding (Verified):** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) do not exist on PDI.
 - **Verified via:** `scripts/check_table_requirements.py` - confirms tables don't exist
 - **Plugin Required:** **CMDB CI Class Models** (`sn_cmdb_ci_class`) plugin must be activated
+- **Plugin Dependency:** Plugin states "Expanded model and asset classes will be installed" - may require CMDB subscription/licensing
 - **Action for PDI:** Activate plugin via System Definition > Plugins > "CMDB CI Class Models"
 - **Base Table Available:** Base `cmdb_ci` table exists and works for smoke testing (fallback option)
 - **Workaround:** Use base `cmdb_ci` table with `sys_class_name` field to categorize CIs, or activate plugin
 - **Documentation:** See `docs/pdi_activation_guide.md` for activation instructions
 - **For Production:** Plugin should be activated. If not available, users can use base table fallback or request plugin activation.
+- **Minimal Install Option:** Backlog item - support for instances without CMDB subscription, using only base `cmdb_ci` table (no plugin required)
 
 **Rationale:** Standard ServiceNow CMDB structure. If custom tables needed, we'll adjust.
 **Smoke Test Result:** Base `cmdb_ci` table works. Specific CI type tables not found on PDI.
