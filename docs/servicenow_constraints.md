@@ -45,7 +45,7 @@
 
 ---
 
-### 2. Standard CMDB Tables Available ✅
+### 2. Standard CMDB Tables Available ⚠️
 
 **Assumption:** Standard ServiceNow CMDB tables are available and can be used.
 
@@ -55,9 +55,15 @@
 - `cmdb_ci_network_gear` - Network device CI
 - `cmdb_endpoint` - Endpoint/client records (may be custom)
 
-**Rationale:** Standard ServiceNow CMDB structure. If custom tables needed, we'll adjust.
+**PDI Finding:** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) may not exist on all instances.
+- **ITOM Required?** These tables may require ITOM (IT Operations Management) plugin to be installed/activated.
+- **Base Table Available:** Base `cmdb_ci` table exists and works for smoke testing.
+- **Workaround:** Use base `cmdb_ci` table with `sys_class_name` field to categorize CIs, or create custom tables.
 
-**Impact if Violated:** Would need to create custom tables or use different table names.
+**Rationale:** Standard ServiceNow CMDB structure. If custom tables needed, we'll adjust.
+**Smoke Test Result:** Base `cmdb_ci` table works. Specific CI type tables not found on PDI.
+
+**Impact if Violated:** Would need to create custom tables or use different table names or base `cmdb_ci` table.
 
 ---
 
@@ -234,6 +240,8 @@ When modifying constraints/assumptions:
 
 1. **Custom fields available?** → Assumed YES, verified in smoke test
 2. **Standard tables or custom?** → **PDI Finding:** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) may not exist on all instances. May need to use base `cmdb_ci` table or create custom tables.
+   - **ITOM Required?** Specific CI type tables may require ITOM (IT Operations Management) plugin to be installed/activated.
+   - **Workaround:** Use base `cmdb_ci` table with `sys_class_name` field to categorize CIs.
 3. **Required fields?** → Assumed MINIMAL, may need more
 4. **Import Sets vs direct API?** → Assumed DIRECT API, may switch to Import Sets
 5. **OAuth vs Basic Auth?** → Using BASIC AUTH (username/password), API key for production
