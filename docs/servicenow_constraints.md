@@ -139,12 +139,20 @@
 
 **Rationale:** ServiceNow requires `sys_id` for relationships. Cannot use source IDs. REST API doesn't support transactional/batch operations.
 
-**Alternatives:**
+**Current Implementation:** REST API with two-phase approach (implemented and tested).
+
+**Alternative Approaches (To Investigate):**
 - **GraphQL API**: May support batch mutations and transactional semantics (single-phase approach)
+  - ServiceNow GraphQL API available since Quebec release
+  - Need to verify: batch mutations, transactional semantics, inline relationship references
+  - If supported, could eliminate two-phase complexity
+  - Investigation needed before switching
 - **Change Management**: Standard/Regular Changes could track entire batch operation
 - **Import Sets**: Could use Import Sets with transform maps (different approach)
 
 **Impact if Violated:** Would need single-phase approach (e.g., GraphQL batch mutations, pre-create placeholder records, or Import Sets).
+
+**Discovery Task:** Investigate ServiceNow GraphQL API capabilities for batch mutations and transactional semantics before considering switch from REST.
 
 ---
 
