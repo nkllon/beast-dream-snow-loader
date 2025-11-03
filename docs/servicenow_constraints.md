@@ -15,9 +15,10 @@
 **Enforcement:**
 - Never create `.env` files in project directories (cluster-wide policy violation)
 - Never use `python-dotenv` or any library to load `.env` files
-- Code reads from system environment via `os.getenv()` only
-- The user/system is responsible for making environment variables available in the system environment
-- Code does not manage or load environment variables - it only consumes them
+- Code is execution-context-agnostic: it doesn't know WHO is executing it or in WHAT context
+- Code reads from system environment via `os.getenv()` only - automatically uses executing user's environment
+- The executing user/system is responsible for making environment variables available in the system environment
+- Code does not detect execution context (beast node, local dev, CI/CD, production, etc.) - it just reads from `os.getenv()`
 
 **Can Violate:** No - this is a cluster-wide policy constraint.
 

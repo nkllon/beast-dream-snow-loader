@@ -8,9 +8,10 @@ from typing import Any
 import requests  # type: ignore
 
 # Cluster-wide rule: Never create .env files in project directories.
-# Code reads environment variables from system environment via os.getenv().
-# The user/system is responsible for making environment variables available.
-# Code does not load or manage environment variables - it only consumes them.
+# Code is execution-context-agnostic: it doesn't know WHO is executing it or in WHAT context.
+# Code reads from os.getenv() which automatically uses the executing user's system environment.
+# The executing user/system is responsible for making environment variables available.
+# Code does not detect execution context - it just reads from os.getenv().
 
 
 def _is_1password_available() -> bool:

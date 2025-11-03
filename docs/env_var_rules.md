@@ -12,13 +12,19 @@
 
 **Enforcement:** Never create `.env` files (at least without asking). Violates cluster-wide policy.
 
-## Principle
+## Principle: Execution Context Agnosticism
 
-**The code does not manage environment variables - it only consumes them.**
+**The code does not know WHO is executing it or in WHAT context.**
 
-The code reads from the system environment via `os.getenv()`. The user/system is responsible for making environment variables available in the system environment. The code does not care WHERE they come from - that's the user's/system's responsibility.
+The code is **execution-context-agnostic**. It reads from `os.getenv()`, which automatically reads from the **executing user's** system environment, regardless of:
+- **WHO** the executing user is (beast node, local developer, CI/CD system, production deployment user, etc.)
+- **WHAT** execution context it's running in (beast cluster, local dev, CI/CD pipeline, production server, etc.)
+- **WHERE** the executing user's home directory is (the code doesn't need to know)
+- **HOW** the environment variables got there (shell config, deployment system, CI/CD injection, etc.)
 
-**Note:** The code does not care HOW the user/system makes environment variables available - whether via shell config, deployment system, CI/CD, etc. That's the user's/system's responsibility.
+The code does not detect or know its execution context. It just reads from the system environment of whoever is executing it.
+
+**Key insight:** "All environment variables must be in the home directory of the executing user" - but the code doesn't know or care who that executing user is. It just reads from `os.getenv()` which automatically uses the executing user's environment.
 
 ### Priority Order
 
