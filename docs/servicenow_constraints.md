@@ -232,11 +232,11 @@ When modifying constraints/assumptions:
 
 ## Questions That May Need Answers Later
 
-1. **Custom fields available?** → Assumed YES, may need to verify
-2. **Standard tables or custom?** → Assumed STANDARD, may need custom
+1. **Custom fields available?** → Assumed YES, verified in smoke test
+2. **Standard tables or custom?** → **PDI Finding:** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) may not exist on all instances. May need to use base `cmdb_ci` table or create custom tables.
 3. **Required fields?** → Assumed MINIMAL, may need more
 4. **Import Sets vs direct API?** → Assumed DIRECT API, may switch to Import Sets
-5. **OAuth vs Basic Auth?** → Assumed BASIC AUTH, may need OAuth
+5. **OAuth vs Basic Auth?** → Using BASIC AUTH (username/password), API key for production
 6. **GraphQL vs REST API?** → Currently using REST, GraphQL may support batch/transactional operations
 7. **Change Management?** → Not currently using, but Standard/Regular Changes could track batch operations
 

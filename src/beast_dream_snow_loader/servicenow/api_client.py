@@ -324,6 +324,32 @@ class ServiceNowAPIClient:
         """
         url = f"{self.base_url}/table/{table}"
         response = self.session.post(url, json=data)
+        if response.status_code == 401:
+            # Provide more detail on auth failure
+            error_detail = response.text
+            raise requests.HTTPError(
+                f"401 Unauthorized - Authentication failed.\n"
+                f"Instance: {self.instance}\n"
+                f"URL: {url}\n"
+                f"Response: {error_detail}\n"
+                f"Please verify username and password are correct."
+            )
+        if response.status_code == 400:
+            # Provide more detail on bad request
+            error_detail = response.text
+            try:
+                error_json = response.json()
+                error_detail = error_json
+            except Exception:
+                pass
+            raise requests.HTTPError(
+                f"400 Bad Request - Invalid request.\n"
+                f"Instance: {self.instance}\n"
+                f"URL: {url}\n"
+                f"Data: {data}\n"
+                f"Response: {error_detail}\n"
+                f"This may indicate missing required fields, invalid table name, or validation errors."
+            )
         response.raise_for_status()
         return response.json().get("result", {})  # type: ignore
 
