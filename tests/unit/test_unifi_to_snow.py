@@ -1,9 +1,23 @@
 """Unit tests for UniFi to ServiceNow transformation functions."""
 
-
-from beast_dream_snow_loader.models.servicenow import ServiceNowGatewayCI
-from beast_dream_snow_loader.models.unifi import UniFiHost
-from beast_dream_snow_loader.transformers.unifi_to_snow import transform_host
+from beast_dream_snow_loader.models.servicenow import (
+    ServiceNowEndpoint,
+    ServiceNowGatewayCI,
+    ServiceNowLocation,
+    ServiceNowNetworkDeviceCI,
+)
+from beast_dream_snow_loader.models.unifi import (
+    UniFiClient,
+    UniFiDevice,
+    UniFiHost,
+    UniFiSite,
+)
+from beast_dream_snow_loader.transformers.unifi_to_snow import (
+    transform_client,
+    transform_device,
+    transform_host,
+    transform_site,
+)
 
 
 class TestTransformHost:
@@ -135,3 +149,242 @@ class TestTransformHost:
         assert result.name is not None
         assert result.ip_address is not None
         assert result.hostname is not None
+
+
+class TestTransformSite:
+    """Test transform_site function."""
+
+    def test_transform_site_with_minimal_data(self):
+        """Test transforming minimal UniFi site to ServiceNow location."""
+        unifi_site = UniFiSite(
+            siteId="test-site-id",
+            hostId="test-host-id",
+            permission="read",
+            isOwner=True,
+            meta={
+                "desc": "Test site description",
+                "name": "Test Site",
+                "timezone": "America/New_York",
+            },
+            statistics={
+                "counts": {
+                    "criticalNotification": 0,
+                    "gatewayDevice": 1,
+                    "guestClient": 0,
+                    "lanConfiguration": 0,
+                    "offlineDevice": 0,
+                    "offlineGatewayDevice": 0,
+                    "offlineWifiDevice": 0,
+                    "offlineWiredDevice": 0,
+                    "pendingUpdateDevice": 0,
+                    "totalDevice": 5,
+                    "wanConfiguration": 1,
+                    "wifiClient": 10,
+                    "wifiConfiguration": 1,
+                    "wifiDevice": 3,
+                    "wiredClient": 2,
+                    "wiredDevice": 2,
+                },
+            },
+        )
+
+        result = transform_site(unifi_site)
+
+        assert isinstance(result, ServiceNowLocation)
+        assert result.sys_id == "test-site-id"
+        assert result.name == "Test Site"
+        assert result.description == "Test site description"
+        assert result.timezone == "America/New_York"
+        assert result.host_id == "test-host-id"
+
+    def test_transform_site_preserves_relationships(self):
+        """Test that site-to-host relationships are preserved."""
+        unifi_site = UniFiSite(
+            siteId="test-site-id",
+            hostId="test-host-id",
+            permission="read",
+            isOwner=True,
+            meta={
+                "desc": "Test site description",
+                "name": "Test Site",
+                "timezone": "America/New_York",
+            },
+            statistics={
+                "counts": {
+                    "criticalNotification": 0,
+                    "gatewayDevice": 1,
+                    "guestClient": 0,
+                    "lanConfiguration": 0,
+                    "offlineDevice": 0,
+                    "offlineGatewayDevice": 0,
+                    "offlineWifiDevice": 0,
+                    "offlineWiredDevice": 0,
+                    "pendingUpdateDevice": 0,
+                    "totalDevice": 5,
+                    "wanConfiguration": 1,
+                    "wifiClient": 10,
+                    "wifiConfiguration": 1,
+                    "wifiDevice": 3,
+                    "wiredClient": 2,
+                    "wiredDevice": 2,
+                },
+            },
+        )
+
+        result = transform_site(unifi_site)
+
+        # hostId should map to host_id FK
+        assert result.host_id == "test-host-id"
+
+    def test_transform_site_validates_output(self):
+        """Test that output validates against ServiceNow model."""
+        unifi_site = UniFiSite(
+            siteId="test-site-id",
+            hostId="test-host-id",
+            permission="read",
+            isOwner=True,
+            meta={
+                "desc": "Test site description",
+                "name": "Test Site",
+                "timezone": "America/New_York",
+            },
+            statistics={
+                "counts": {
+                    "criticalNotification": 0,
+                    "gatewayDevice": 1,
+                    "guestClient": 0,
+                    "lanConfiguration": 0,
+                    "offlineDevice": 0,
+                    "offlineGatewayDevice": 0,
+                    "offlineWifiDevice": 0,
+                    "offlineWiredDevice": 0,
+                    "pendingUpdateDevice": 0,
+                    "totalDevice": 5,
+                    "wanConfiguration": 1,
+                    "wifiClient": 10,
+                    "wifiConfiguration": 1,
+                    "wifiDevice": 3,
+                    "wiredClient": 2,
+                    "wiredDevice": 2,
+                },
+            },
+        )
+
+        result = transform_site(unifi_site)
+
+        assert isinstance(result, ServiceNowLocation)
+        assert result.sys_id is not None
+        assert result.name is not None
+        assert result.description is not None
+        assert result.timezone is not None
+
+
+class TestTransformDevice:
+    """Test transform_device function."""
+
+    def test_transform_device_with_minimal_data(self):
+        """Test transforming minimal UniFi device to ServiceNow network device CI."""
+        unifi_device = UniFiDevice(
+            hostId="test-device-id",
+            updatedAt="2025-01-01T00:00:00Z",
+        )
+
+        result = transform_device(unifi_device)
+
+        assert isinstance(result, ServiceNowNetworkDeviceCI)
+        assert result.sys_id == "test-device-id"
+        assert result.name is not None
+
+    def test_transform_device_extracts_identifiers(self):
+        """Test that device identifiers are correctly extracted."""
+        unifi_device = UniFiDevice(
+            hostId="test-device-id",
+            updatedAt="2025-01-01T00:00:00Z",
+            mac="00:11:22:33:44:55",
+            serial="ABC123",
+            model="USW-Pro-48",
+        )
+
+        result = transform_device(unifi_device)
+
+        assert result.mac_address == "00:11:22:33:44:55"
+        assert result.serial_number == "ABC123"
+        assert result.model == "USW-Pro-48"
+
+    def test_transform_device_validates_output(self):
+        """Test that output validates against ServiceNow model."""
+        unifi_device = UniFiDevice(
+            hostId="test-device-id",
+            updatedAt="2025-01-01T00:00:00Z",
+            mac="00:11:22:33:44:55",
+        )
+
+        result = transform_device(unifi_device)
+
+        assert isinstance(result, ServiceNowNetworkDeviceCI)
+        assert result.sys_id is not None
+        assert result.name is not None
+        assert result.mac_address is not None
+
+
+class TestTransformClient:
+    """Test transform_client function."""
+
+    def test_transform_client_with_minimal_data(self):
+        """Test transforming minimal UniFi client to ServiceNow endpoint."""
+        unifi_client = UniFiClient(
+            hostname="test-client",
+            ip="192.168.1.100",
+            mac="00:11:22:33:44:55",
+        )
+
+        result = transform_client(unifi_client)
+
+        assert isinstance(result, ServiceNowEndpoint)
+        assert result.hostname == "test-client"
+        assert result.ip_address == "192.168.1.100"
+        assert result.mac_address == "00:11:22:33:44:55"
+
+    def test_transform_client_identifies_device_type(self):
+        """Test that device types are correctly identified."""
+        unifi_client = UniFiClient(
+            hostname="test-phone",
+            ip="192.168.1.101",
+            mac="00:11:22:33:44:56",
+            deviceType="phone",
+        )
+
+        result = transform_client(unifi_client)
+
+        assert result.device_type == "phone"
+
+    def test_transform_client_preserves_relationships(self):
+        """Test that client-to-site/device relationships are preserved."""
+        unifi_client = UniFiClient(
+            hostname="test-client",
+            ip="192.168.1.100",
+            mac="00:11:22:33:44:55",
+            siteId="test-site-id",
+            deviceId="test-device-id",
+        )
+
+        result = transform_client(unifi_client)
+
+        assert result.site_id == "test-site-id"
+        assert result.device_id == "test-device-id"
+
+    def test_transform_client_validates_output(self):
+        """Test that output validates against ServiceNow model."""
+        unifi_client = UniFiClient(
+            hostname="test-client",
+            ip="192.168.1.100",
+            mac="00:11:22:33:44:55",
+        )
+
+        result = transform_client(unifi_client)
+
+        assert isinstance(result, ServiceNowEndpoint)
+        assert result.sys_id is not None
+        assert result.hostname is not None
+        assert result.ip_address is not None
+        assert result.mac_address is not None

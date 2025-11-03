@@ -118,9 +118,13 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
     if "name" not in mapped_data:
         mapped_data["name"] = unifi_device.hostId  # Fallback to hostId if no name
     if "mac_address" not in mapped_data:
-        # Try to get from extra fields
-        if hasattr(unifi_device, "mac"):
-            mapped_data["mac_address"] = unifi_device.mac
+        # Try to get from extra fields or use fallback
+        device_dict = unifi_device.model_dump()
+        if "mac" in device_dict:
+            mapped_data["mac_address"] = device_dict["mac"]
+        else:
+            # Required field - use placeholder if not available
+            mapped_data["mac_address"] = "unknown"
 
     # Validate and return ServiceNow model
     return ServiceNowNetworkDeviceCI(**mapped_data)
