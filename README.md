@@ -26,9 +26,17 @@ beast-dream-snow-loader transforms and loads UniFi network data (hosts, sites, d
 
 ## Project Status
 
+⚠️ **BETA PRE-RELEASE** - Work in Progress  
 ✅ **MVP Complete** - Core features implemented and tested  
-📦 **Release 0.1.0** - See [RELEASE_NOTES.md](RELEASE_NOTES.md) for details  
+📦 **Version 0.1.0b1** - See [RELEASE_NOTES.md](RELEASE_NOTES.md) for details  
 📋 **Features:** See [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md) for complete feature list
+
+**Note:** This is a beta pre-release. Pre-releases are not installed by default:
+```bash
+pip install --pre beast-dream-snow-loader
+```
+
+See [Known Limitations](docs/MVP_FEATURES.md#known-limitations) before using.
 
 ## Source Data Schema
 

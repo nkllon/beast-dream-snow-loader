@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "beast-dream-snow-loader"
-version = "0.1.0"
-description = "UniFi Dream Machine → ServiceNow CMDB Data Loader"
+version = "0.1.0b1"
+description = "UniFi Dream Machine → ServiceNow CMDB Data Loader (BETA - Work in Progress)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -31,6 +31,9 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Networking",
 ]
+# Note: Version 0.1.0b1 is a BETA pre-release
+# Pre-releases are not installed by default (require --pre flag)
+# This indicates the package is still work in progress
 dependencies = [
     "pydantic",
     "requests",
