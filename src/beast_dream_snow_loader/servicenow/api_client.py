@@ -401,6 +401,9 @@ class ServiceNowAPIClient:
     ) -> dict[str, Any]:
         """Create a Change Request in ServiceNow.
 
+        Note: Change Requests are for workflow/audit. For schema/data changes,
+        we may need to use changesets instead (see create_changeset).
+
         Args:
             short_description: Short description of the change
             type: Change type - "standard" (pre-approved), "normal" (needs approval), "emergency"
@@ -424,20 +427,56 @@ class ServiceNowAPIClient:
         response.raise_for_status()
         return response.json().get("result", {})  # type: ignore
 
-    def get_current_change_request(self) -> dict[str, Any] | None:
-        """Get current Change Request context if we're in one.
+    def create_changeset(
+        self, name: str, description: str | None = None
+    ) -> dict[str, Any]:
+        """Create a changeset for schema/data changes (CMDB modifications).
 
-        Note: This may not be directly supported by ServiceNow API.
-        We might need to track Change Request context manually or use headers.
+        Changesets are used for schema changes - grouping related data modifications
+        together. This is different from Change Requests (workflow/audit).
+
+        Args:
+            name: Changeset name
+            description: Changeset description (optional)
 
         Returns:
-            Current Change Request data if in a change context, None otherwise
+            Created changeset data with sys_id
+
+        Raises:
+            requests.HTTPError: If API request fails
         """
-        # TODO: Investigate ServiceNow API for detecting Change Request context
+        # TODO: Investigate ServiceNow changeset API endpoint
+        # Changesets are typically for schema/data changes (CMDB modifications)
+        # This might be:
+        # - /api/now/changeset
+        # - /api/sn_cmdb/changeset
+        # - Or part of a different API
+        # Need to verify the correct endpoint and structure
+        raise NotImplementedError(
+            "Changeset creation not yet implemented - need to investigate ServiceNow changeset API"
+        )
+
+    def get_current_changeset(self) -> dict[str, Any] | None:
+        """Get current changeset context if we're in one.
+
+        Changesets can include both schema changes (table structure, fields) and
+        data changes (records in those tables). This is useful for CMDB modifications
+        where we want transactional behavior - all schema and data changes together.
+
+        This is different from Change Requests (workflow/audit for operations).
+
+        Note: This may not be directly supported by ServiceNow API.
+        We might need to track changeset context manually or use headers.
+
+        Returns:
+            Current changeset data if in a changeset context, None otherwise
+        """
+        # TODO: Investigate ServiceNow API for detecting changeset context
+        # Changesets can include both schema AND data changes (CMDB modifications)
         # This might require:
-        # - Session headers (X-Change-Request-ID?)
-        # - API endpoint for current context
-        # - Manual tracking of Change Request association
+        # - Session headers (X-Changeset-ID?)
+        # - API endpoint for current changeset context
+        # - Manual tracking of changeset association
         return None
 
     def associate_with_change_request(

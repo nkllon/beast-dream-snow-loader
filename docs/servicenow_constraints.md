@@ -154,10 +154,11 @@
 
 **Discovery Tasks:**
 1. **GraphQL API**: Investigate batch mutations and transactional semantics before considering switch from REST
-2. **Changeset/Change Request**: Investigate if we can:
+2. **Changesets**: Investigate if we can:
    - Initiate/start a changeset before writing records
    - Detect if we're already in a changeset context
-   - Associate operations with Change Request for transactional behavior
+   - Include both schema and data changes in changeset
+   - Changesets can wrap CMDB data modifications for transactional behavior
 
 ---
 
