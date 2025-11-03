@@ -24,21 +24,32 @@ def _is_1password_available() -> bool:
 def _is_1password_signed_in() -> bool:
     """Check if user is signed in to 1Password CLI.
 
+    Checks sign-in status silently without prompting for sign-in.
+    Returns False if not signed in (does not attempt to sign in).
+
     Returns:
-        True if signed in, False otherwise (including if CLI not available)
+        True if already signed in, False otherwise (including if CLI not available)
+
+    Note:
+        This checks status only - does not attempt to sign in.
+        If user is not signed in, returns False silently.
     """
     if not _is_1password_available():
         return False
 
     try:
+        # Check sign-in status silently (no prompting)
+        # Use 'op whoami' which checks status without prompting
         result = subprocess.run(
-            ["op", "account", "list"],
+            ["op", "whoami"],
             capture_output=True,
             text=True,
             timeout=5,
+            # Don't capture stderr to avoid prompts
         )
-        # If command succeeds, user is signed in
-        return result.returncode == 0
+        # If command succeeds and returns user info, user is signed in
+        # If not signed in, command fails with non-zero exit code
+        return result.returncode == 0 and result.stdout.strip() != ""
     except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
         return False
 
@@ -48,21 +59,26 @@ def _get_1password_credential(
 ) -> str | None:
     """Get credential from 1Password CLI.
 
+    Only retrieves credential if user is already signed in.
+    Does not attempt to sign in if user is not signed in.
+
     Args:
         item_name: 1Password item name (e.g., "ServiceNow Dev Account")
         field: Field name (e.g., "username", "api_key", "password")
         vault: Vault name (default: "Beastmaster")
 
     Returns:
-        Credential value as string, or None if not available or not signed in
-
-    Note:
-        Returns None if:
+        Credential value as string, or None if:
         - 1Password CLI not installed
-        - User not signed in
+        - User not signed in (does not prompt for sign-in)
         - Item/field not found
         - Command fails for any reason
+
+    Note:
+        This is a silent check - does not prompt for sign-in.
+        If user is not signed in, returns None and falls back to env vars.
     """
+    # Check if already signed in (silent check, no prompting)
     if not _is_1password_signed_in():
         return None
 
