@@ -4,11 +4,38 @@
 
 Even without a hackathon, setting up the Observatory gateway pattern provides valuable learning and benchmarking opportunities:
 
-1. **Performance Data**: Benchmark ServiceNow API performance through gateway vs direct
-2. **Rate Limiting**: Test ServiceNow's built-in rate limiting vs gateway rate limiting
-3. **Monitoring**: Collect metrics on API usage, latency, error rates
-4. **Observatory Infrastructure**: Build out observatory.nkllon.com infrastructure
-5. **Lab Experimentation**: Test Cloudflare Workers integration with ServiceNow
+1. **Shared Development Endpoint**: Multiple developers/LLMs can work on same ServiceNow instance
+2. **Performance Data**: Benchmark ServiceNow API performance through gateway vs direct
+3. **Rate Limiting**: Test ServiceNow's built-in rate limiting vs gateway rate limiting
+4. **Monitoring**: Collect metrics on API usage, latency, error rates
+5. **Observatory Infrastructure**: Build out observatory.nkllon.com infrastructure
+6. **Lab Experimentation**: Test Cloudflare Workers integration with ServiceNow
+
+## Shared Development Use Case
+
+**Problem:** Multiple developers/LLMs working on integration, but each needs ServiceNow access
+- Each developer would need their own PDI (or share credentials - not ideal)
+- Multiple LLMs working on same problem need shared state
+- Tracking who did what is difficult with shared credentials
+
+**Solution:** Observatory gateway with per-developer API keys
+- Single PDI instance (shared development environment)
+- Each developer/LLM gets their own API key
+- Gateway tracks usage per API key (who did what)
+- All working on same ServiceNow instance, but isolated via API keys
+
+**Benefits:**
+- **Shared State**: All developers/LLMs see same data
+- **Isolation**: Each API key tracks separate usage
+- **Monitoring**: See which developer/LLM made which changes
+- **No Credential Sharing**: Each gets their own API key
+- **Easy Onboarding**: New developer? Generate API key, done
+
+**PDI User Limits:**
+- PDIs support multiple named users (can create additional users)
+- Each user can have their own API key
+- All users can access the same PDI instance
+- No hard limit on number of users (within reason)
 
 ## What We Can Learn
 
