@@ -29,8 +29,9 @@ dependencies = [
     "pydantic",
     "requests",
 ]
-# Note: python-dotenv removed - cluster-wide rule: all env vars in user's home directory
-# Never create .env files in project directories
+# Note: python-dotenv NOT used - cluster-wide rule: all env vars in user's home directory
+# Environment variables set via system environment (shell config in home directory)
+# Code reads from os.getenv() (system environment variables only)
 # Note: beast-unifi-integration will be added when available
 
 [project.urls]

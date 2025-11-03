@@ -14,8 +14,9 @@
 
 **Enforcement:**
 - Never create `.env` files in project directories (cluster-wide policy violation)
-- Never use `python-dotenv` to load `.env` files from project root
-- Only use system environment variables (from user's home directory)
+- Never use `python-dotenv` to load `.env` files from any location
+- Only use system environment variables (`os.getenv()` - set via shell config in user's home directory)
+- If you can't see `~/.env`, you have a bigger problem (system setup issue, not code issue)
 
 **Can Violate:** No - this is a cluster-wide policy constraint.
 

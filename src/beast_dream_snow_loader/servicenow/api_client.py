@@ -7,9 +7,11 @@ from typing import Any
 
 import requests  # type: ignore
 
-# Note: Environment variables are loaded from system environment only.
 # Cluster-wide rule: All env vars must be in user's home directory.
 # Never create .env files in project directories (cluster-wide policy).
+# Environment variables are set via system environment (shell config in home directory).
+# Code reads from os.getenv() (system environment variables only).
+# If you can't see ~/.env, you have a bigger problem (system setup issue).
 
 
 def _is_1password_available() -> bool:
