@@ -1,6 +1,5 @@
 """Unit tests for schema mapper."""
 
-
 from beast_dream_snow_loader.transformers.schema_mapper import (
     FieldMappingConfig,
     flatten_nested_field,
