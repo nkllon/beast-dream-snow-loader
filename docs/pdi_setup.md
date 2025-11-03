@@ -4,30 +4,48 @@
 
 ## Enabling REST API Access
 
-PDIs may require REST API to be enabled. To enable:
+REST API should be enabled by default on PDIs, but the user may need proper roles.
+
+### Step 1: Check User Roles
+
+The `admin` user needs the `rest_api_explorer` role:
 
 1. **Log into your PDI instance** (e.g., `https://dev212392.service-now.com`)
-2. **Navigate to:** System Web Services → REST → REST API Explorer
-   - Or search for "REST API Explorer" in the filter navigator
-3. **Verify REST API is enabled** - you should see the REST API Explorer interface
+2. **Navigate to:** User Administration → Users
+   - Or search for "Users" in the filter navigator
+3. **Find the admin user** and click on it
+4. **Check the "Roles" tab** - ensure it has:
+   - `rest_api_explorer` - Required for REST API access
+   - `admin` - Should already be present
+   - `web_service_admin` - Optional but recommended
 
-If REST API Explorer doesn't work or shows errors, you may need to:
+5. **If `rest_api_explorer` is missing:**
+   - Click "Edit" on the user
+   - Go to "Roles" tab
+   - Click "Edit" on Roles
+   - Search for "rest_api_explorer"
+   - Add it to the user
+   - Save
 
-### Enable REST API Plugin
-1. Go to **System Definition → Plugins**
-2. Search for "REST API" or "API"
-3. Ensure REST API plugin is **Active**
+### Step 2: Verify REST API Explorer Works
 
-### Grant Required Roles
-The user (admin) may need these roles:
-- `rest_api_explorer` - Access to REST API Explorer
-- `web_service_admin` - Admin access to web services
-- `admin` - Should already have this on PDI
+1. **Navigate to:** REST API Explorer
+   - Search for "REST API Explorer" in the filter navigator
+   - Or go to: System Web Services → REST → REST API Explorer
+2. **If you can access REST API Explorer**, REST API is enabled
+3. **If you get an error**, you need the `rest_api_explorer` role (see Step 1)
 
-### Verify User Permissions
-1. Go to **User Administration → Users**
-2. Find your user (admin)
-3. Verify roles include REST API access
+### Step 3: Test REST API Access
+
+Once `rest_api_explorer` role is added, test with:
+
+```bash
+curl -u "admin:PASSWORD" \
+  -H "Accept: application/json" \
+  "https://dev212392.service-now.com/api/now/table/sys_user?sysparm_limit=1"
+```
+
+Should return JSON data, not 401 error.
 
 ## Testing REST API Access
 
