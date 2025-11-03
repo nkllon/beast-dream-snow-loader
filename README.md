@@ -63,7 +63,9 @@ UniFi data structure (from `docs/unifi_schema.sql`):
 
 1. **Install:**
    ```bash
-   uv sync
+   pip install --pre beast-dream-snow-loader
+   # Or with uv:
+   uv pip install --pre beast-dream-snow-loader
    ```
 
 2. **Configure ServiceNow:**
@@ -73,14 +75,14 @@ UniFi data structure (from `docs/unifi_schema.sql`):
    export SERVICENOW_API_KEY="your-api-key"  # or use 1Password
    ```
 
-3. **Run Smoke Test:**
+3. **Run Complete Example:**
    ```bash
-   uv run python examples/smoke_test.py
+   python examples/complete_workflow.py
    ```
 
-4. **Check Table Requirements:**
+4. **Or Run Smoke Test:**
    ```bash
-   uv run python scripts/check_table_requirements.py
+   python examples/smoke_test.py
    ```
 
 See [docs/pdi_activation_guide.md](docs/pdi_activation_guide.md) for ServiceNow plugin setup.
