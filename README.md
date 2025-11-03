@@ -12,14 +12,23 @@ beast-dream-snow-loader transforms and loads UniFi network data (hosts, sites, d
 
 ## What It Does
 
-1. **Reads UniFi Data:** Uses `beast_unifi` API clients to fetch raw UniFi data
-2. **Transforms Data:** Maps UniFi schema to ServiceNow CMDB schema
-3. **Creates ServiceNow Tables:** Defines and creates required CMDB tables
-4. **Loads Data:** Syncs devices, sites, hosts, and clients to ServiceNow
+1. **Transforms Data:** Maps UniFi schema to ServiceNow CMDB schema
+   - UniFi hosts → ServiceNow network gateway CIs
+   - UniFi sites → ServiceNow locations
+   - UniFi devices → ServiceNow network device CIs
+   - UniFi clients → ServiceNow endpoints
+2. **Loads Data:** Syncs transformed data to ServiceNow CMDB via REST API
+   - Two-phase relationship linking
+   - Batch loading with dependency resolution
+   - Supports specific CI type tables or base `cmdb_ci` table fallback
+
+**Note:** Currently assumes ServiceNow tables exist. Table creation feature planned for future release.
 
 ## Project Status
 
-🚧 **In Development** - Spec-driven development phase
+✅ **MVP Complete** - Core features implemented and tested  
+📦 **Release 0.1.0** - See [RELEASE_NOTES.md](RELEASE_NOTES.md) for details  
+📋 **Features:** See [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md) for complete feature list
 
 ## Source Data Schema
 
@@ -32,15 +41,56 @@ UniFi data structure (from `docs/unifi_schema.sql`):
 ## ServiceNow Integration
 
 - **Target:** ServiceNow CMDB
-- **Method:** REST API (via MID server for secure, authenticated access)
-- **Tables:** ServiceNow CMDB tables for network infrastructure
-- **Transformation:** UniFi schema → ServiceNow CMDB schema mapping
+- **Method:** REST API (direct API calls, MID server support planned)
+- **Tables:** 
+  - Preferred: Specific CI type tables (`cmdb_ci_network_gateway`, `cmdb_ci_network_gear`, etc.)
+  - Fallback: Base `cmdb_ci` table with `sys_class_name` (works without plugin)
+- **Plugin Requirement:** CMDB CI Class Models (`sn_cmdb_ci_class`) for full table support
+  - Free in PDIs, included with ITOM Visibility in production
+  - See [docs/pdi_activation_guide.md](docs/pdi_activation_guide.md) for activation
+- **Authentication:** API key (preferred), OAuth token, Basic Auth (fallback)
+- **1Password Integration:** Optional 1Password CLI support for credential management
+
+## Quick Start
+
+1. **Install:**
+   ```bash
+   uv sync
+   ```
+
+2. **Configure ServiceNow:**
+   ```bash
+   export SERVICENOW_INSTANCE="your-instance.service-now.com"
+   export SERVICENOW_USERNAME="your-username"
+   export SERVICENOW_API_KEY="your-api-key"  # or use 1Password
+   ```
+
+3. **Run Smoke Test:**
+   ```bash
+   uv run python examples/smoke_test.py
+   ```
+
+4. **Check Table Requirements:**
+   ```bash
+   uv run python scripts/check_table_requirements.py
+   ```
+
+See [docs/pdi_activation_guide.md](docs/pdi_activation_guide.md) for ServiceNow plugin setup.
 
 ## Dependencies
 
-- `beast-unifi-integration` - UniFi API clients
-- ServiceNow REST API client
-- ServiceNow MID server (for authentication)
+- `pydantic` - Data validation and models
+- `requests` - HTTP client for ServiceNow REST API
+- `beast-unifi-integration` - UniFi API clients (planned, not yet available)
+
+## Documentation
+
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get started in 5 minutes
+- **[MVP Features](docs/MVP_FEATURES.md)** - Complete feature list
+- **[Release Notes](RELEASE_NOTES.md)** - What's new and what's planned
+- **[ServiceNow Setup](docs/pdi_setup.md)** - REST API and plugin activation
+- **[Table Requirements](docs/table_requirements.md)** - Plugin dependencies and verification
+- **[Constraints & Assumptions](docs/servicenow_constraints.md)** - ServiceNow integration details
 
 ## License
 
