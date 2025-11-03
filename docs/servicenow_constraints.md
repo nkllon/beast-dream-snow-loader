@@ -137,9 +137,14 @@
 1. **Phase 1:** Create all records (without relationships), capture returned `sys_id`s
 2. **Phase 2:** Update records with relationship references using captured `sys_id`s
 
-**Rationale:** ServiceNow requires `sys_id` for relationships. Cannot use source IDs.
+**Rationale:** ServiceNow requires `sys_id` for relationships. Cannot use source IDs. REST API doesn't support transactional/batch operations.
 
-**Impact if Violated:** Would need single-phase approach (e.g., pre-create placeholder records).
+**Alternatives:**
+- **GraphQL API**: May support batch mutations and transactional semantics (single-phase approach)
+- **Change Management**: Standard/Regular Changes could track entire batch operation
+- **Import Sets**: Could use Import Sets with transform maps (different approach)
+
+**Impact if Violated:** Would need single-phase approach (e.g., GraphQL batch mutations, pre-create placeholder records, or Import Sets).
 
 ---
 
@@ -218,4 +223,58 @@ When modifying constraints/assumptions:
 3. **Required fields?** → Assumed MINIMAL, may need more
 4. **Import Sets vs direct API?** → Assumed DIRECT API, may switch to Import Sets
 5. **OAuth vs Basic Auth?** → Assumed BASIC AUTH, may need OAuth
+6. **GraphQL vs REST API?** → Currently using REST, GraphQL may support batch/transactional operations
+7. **Change Management?** → Not currently using, but Standard/Regular Changes could track batch operations
+
+## Alternative Approaches (Future Considerations)
+
+### GraphQL API (Alternative to REST)
+
+**Potential Benefits:**
+- **Batch Mutations**: Create multiple records in a single GraphQL mutation
+- **Transactional Semantics**: Mutations may support all-or-nothing behavior
+- **Dynamic Operations**: Build mutations programmatically based on data
+- **Simplified Relationship Linking**: May be able to reference created records within same mutation
+
+**ServiceNow Support:**
+- ServiceNow supports GraphQL API (since Quebec release)
+- GraphQL Table API available for CMDB operations
+- Dynamic GraphQL schema generation from table definitions
+
+**Impact:**
+- Could eliminate two-phase relationship linking
+- Single GraphQL mutation could create all records and set relationships
+- May require ServiceNow GraphQL API client implementation
+
+**Current Status:** Using REST API (two-phase approach). GraphQL could be future enhancement.
+
+---
+
+### Change Management (Alternative to Direct API)
+
+**Potential Benefits:**
+- **Standard Change**: For batch sync operations (pre-approved, fast-track)
+- **Regular/Normal Change**: For updates that need approval workflow
+- **Audit Trail**: All operations tracked under Change Request
+- **Rollback Capability**: Change can be rolled back if needed
+- **Workflow Integration**: Changes go through normal ServiceNow approval process
+
+**Use Cases:**
+- **Full Sync**: Standard Change for entire UniFi sync operation
+- **Incremental Updates**: Standard or Regular Change depending on scope
+- **Bulk Operations**: All record creations/updates tracked under one Change
+
+**Implementation Pattern:**
+1. Create Change Request (Standard or Regular)
+2. Associate all record operations with Change Request
+3. Change Request provides unit of work for entire sync
+4. Approval workflow (if Regular Change) or auto-approval (if Standard Change)
+
+**Impact:**
+- Better audit trail and compliance
+- Operations tracked as managed changes
+- Supports rollback and change tracking
+- May require Change Management configuration
+
+**Current Status:** Not using Change Management. Could be future enhancement for production operations.
 
