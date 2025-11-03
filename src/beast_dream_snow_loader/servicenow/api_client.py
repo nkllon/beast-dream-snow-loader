@@ -6,10 +6,10 @@ import subprocess
 from typing import Any
 
 import requests  # type: ignore
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Note: Environment variables are loaded from system environment only.
+# Cluster-wide rule: All env vars must be in user's home directory.
+# Never create .env files in project directories (cluster-wide policy).
 
 
 def _is_1password_available() -> bool:
