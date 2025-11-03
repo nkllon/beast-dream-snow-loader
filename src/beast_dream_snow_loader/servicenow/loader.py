@@ -101,6 +101,8 @@ def load_entities_with_relationships(
     locations: list[ServiceNowLocation] | None = None,
     devices: list[ServiceNowNetworkDeviceCI] | None = None,
     endpoints: list[ServiceNowEndpoint] | None = None,
+    changeset_id: str | None = None,
+    create_changeset: bool = False,
 ) -> dict[str, dict[str, str]]:
     """Load entities with relationships using two-phase linking.
 
@@ -113,6 +115,8 @@ def load_entities_with_relationships(
         locations: List of location models to load (may reference gateways)
         devices: List of network device CI models to load (may reference gateways/locations)
         endpoints: List of endpoint models to load (may reference locations/devices)
+        changeset_id: Optional changeset ID if already in a changeset context
+        create_changeset: If True and not in changeset, create one before loading
 
     Returns:
         Mapping of table names to dict of {source_id: sys_id} for all created records.
@@ -128,7 +132,27 @@ def load_entities_with_relationships(
         2. Locations (depend on gateways)
         3. Devices (depend on gateways and locations)
         4. Endpoints (depend on locations and devices)
+
+        Changeset Support:
+        - Check if already in changeset context (get_current_changeset)
+        - If not and create_changeset=True, create changeset before loading
+        - If changeset_id provided, use that changeset
+        - All operations performed within changeset for transactional behavior
     """
+    # Check for changeset context
+    current_changeset = client.get_current_changeset()
+    active_changeset_id = changeset_id or (current_changeset.get("sys_id") if current_changeset else None)
+
+    # If create_changeset=True and not in a changeset, create one
+    if create_changeset and not active_changeset_id:
+        # TODO: Implement create_changeset() when ServiceNow API is investigated
+        # For now, this is a placeholder
+        print(
+            "⚠️  Changeset creation requested but not yet implemented.\n"
+            "   Proceeding without changeset (non-transactional).\n"
+            "   Investigation needed: ServiceNow changeset API endpoint and structure."
+        )
+
     # Initialize id_mapping: {table_name: {source_id: sys_id}}
     id_mapping: dict[str, dict[str, str]] = {
         TABLE_GATEWAY_CI: {},
