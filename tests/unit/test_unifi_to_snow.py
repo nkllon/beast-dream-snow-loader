@@ -200,7 +200,11 @@ class TestTransformSite:
         assert result.host_id == "test-host-id"
 
     def test_transform_site_preserves_relationships(self):
-        """Test that site-to-host relationships are preserved."""
+        """Test that site-to-host relationships are preserved.
+
+        Note: Relationships are handled in Phase 2 (two-phase linking).
+        During transformation, relationships are NOT set (they require sys_id references).
+        """
         unifi_site = UniFiSite(
             siteId="test-site-id",
             hostId="test-host-id",
@@ -235,8 +239,9 @@ class TestTransformSite:
 
         result = transform_site(unifi_site)
 
-        # hostId should map to host_id FK
-        assert result.host_id == "test-host-id"
+        # Relationships handled in Phase 2 (after records created and sys_ids captured)
+        # During transformation, host_id is None (will be set in linking phase)
+        assert result.host_id is None
 
     def test_transform_site_validates_output(self):
         """Test that output validates against ServiceNow model."""
@@ -362,7 +367,11 @@ class TestTransformClient:
         assert result.device_type == "phone"
 
     def test_transform_client_preserves_relationships(self):
-        """Test that client-to-site/device relationships are preserved."""
+        """Test that client-to-site/device relationships are preserved.
+
+        Note: Relationships are handled in Phase 2 (two-phase linking).
+        During transformation, relationships are NOT set (they require sys_id references).
+        """
         unifi_client = UniFiClient(
             hostname="test-client",
             ip="192.168.1.100",
@@ -373,8 +382,10 @@ class TestTransformClient:
 
         result = transform_client(unifi_client)
 
-        assert result.site_id == "test-site-id"
-        assert result.device_id == "test-device-id"
+        # Relationships handled in Phase 2 (after records created and sys_ids captured)
+        # During transformation, relationships are None (will be set in linking phase)
+        assert result.site_id is None
+        assert result.device_id is None
 
     def test_transform_client_validates_output(self):
         """Test that output validates against ServiceNow model."""
