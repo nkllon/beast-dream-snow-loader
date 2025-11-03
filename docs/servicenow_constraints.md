@@ -4,6 +4,23 @@
 
 **Last Updated:** 2025-11-03
 
+## Critical Cluster-Wide Constraints
+
+### Environment Variables: User's Home Directory Only
+
+**Constraint:** All environment variables must be in the home directory of the executing user. No exceptions.
+
+**For beast nodes/participants:** Environment variables can go nowhere else. This is a hard constraint.
+
+**Enforcement:**
+- Never create `.env` files in project directories (cluster-wide policy violation)
+- Never use `python-dotenv` to load `.env` files from project root
+- Only use system environment variables (from user's home directory)
+
+**Can Violate:** No - this is a cluster-wide policy constraint.
+
+**See:** `docs/env_var_rules.md` for detailed rules.
+
 ## Assumptions
 
 ### 1. Custom Fields Available ✅
