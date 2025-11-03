@@ -7,11 +7,10 @@ from typing import Any
 
 import requests  # type: ignore
 
-# Cluster-wide rule: All env vars must be in user's home directory.
-# Never create .env files in project directories (cluster-wide policy).
-# Environment variables are set via system environment (shell config in home directory).
-# Code reads from os.getenv() (system environment variables only).
-# If you can't see ~/.env, you have a bigger problem (system setup issue).
+# Cluster-wide rule: Never create .env files in project directories.
+# Code reads environment variables from system environment via os.getenv().
+# The user/system is responsible for making environment variables available.
+# Code does not load or manage environment variables - it only consumes them.
 
 
 def _is_1password_available() -> bool:

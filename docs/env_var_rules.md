@@ -12,59 +12,37 @@
 
 **Enforcement:** Never create `.env` files (at least without asking). Violates cluster-wide policy.
 
-## Location Rules
+## Principle
 
-### System Environment Variables (User's Home Directory)
+**The code does not manage environment variables - it only consumes them.**
 
-**Location:** User's home directory (shell configuration)
+The code reads from the system environment via `os.getenv()`. The user/system is responsible for making environment variables available in the system environment. The code does not care WHERE they come from - that's the user's/system's responsibility.
 
-**Usage:**
-- Set via `export` in shell configuration files (e.g., `~/.bashrc`, `~/.zshrc`, `~/.profile`)
-- Or set in shell session (from user's home directory context)
-- Code reads from `os.getenv()` (system environment variables only)
-- If you can't see `~/.env`, you have a bigger problem (system setup issue)
-
-**Example:**
-```bash
-# Set in user's home directory shell config (e.g., ~/.bashrc, ~/.zshrc)
-export SERVICENOW_INSTANCE=dev12345.service-now.com
-export SERVICENOW_USERNAME=service-account-username
-export SERVICENOW_API_KEY=abc123xyz...
-```
-
-**Or set in shell session:**
-```bash
-# Set in shell session (from user's home directory)
-export SERVICENOW_INSTANCE=dev12345.service-now.com
-export SERVICENOW_USERNAME=service-account-username
-export SERVICENOW_API_KEY=abc123xyz...
-```
+**Note:** The code does not care HOW the user/system makes environment variables available - whether via shell config, deployment system, CI/CD, etc. That's the user's/system's responsibility.
 
 ### Priority Order
 
 1. **Function arguments** (highest priority)
-2. **System environment variables** (`os.getenv()` - from shell environment)
-3. **`~/.env` file** (user's home directory, loaded by `python-dotenv` if exists)
-4. **1Password CLI** (if available and signed in)
+2. **System environment variables** (`os.getenv()` - from system environment)
+3. **1Password CLI** (if available and signed in)
 
-**Note:** Only `~/.env` (user's home directory) is used. Never project-level `.env` files.
+**Note:** Code reads from system environment only. The user/system is responsible for making environment variables available in the system environment (via shell config, deployment system, etc.).
 
 ## When to Use Each
 
 ### Development/Testing
-- Use system environment variables (set in shell config in user's home directory)
-- Set via `export` in `~/.bashrc`, `~/.zshrc`, or `~/.profile`
-- Or set in shell session
+- User/system sets environment variables in system environment (via shell config, session, etc.)
+- Code reads from `os.getenv()` - does not care how they were set
 
 ### Production
-- Use 1Password CLI (preferred)
-- Or system environment variables (set by deployment system in user's home directory)
+- Use 1Password CLI (preferred) - code integrates with 1Password CLI
+- Or user/system sets environment variables in system environment (via deployment system, etc.)
 - Never use project-level `.env` files (cluster-wide policy violation)
 
 ### CI/CD
-- Use system environment variables (set by CI/CD system)
-- Or secrets management (GitHub Secrets, etc.)
-- Never use `.env` files
+- CI/CD system sets environment variables in system environment
+- Or secrets management (GitHub Secrets, etc.) - CI/CD system injects into environment
+- Code reads from `os.getenv()` - does not care how they were set
 
 ## Security Best Practices
 
@@ -77,11 +55,13 @@ export SERVICENOW_API_KEY=abc123xyz...
 
 ## Configuration
 
-**System environment variables only** - Set via shell configuration in user's home directory.
+**The user/system is responsible for making environment variables available.**
 
-**Example shell configuration:**
+The code reads from `os.getenv()` (system environment variables only). The user/system must ensure environment variables are set in the system environment before running the code.
+
+**Example (user responsibility):**
 ```bash
-# Add to ~/.bashrc, ~/.zshrc, or ~/.profile (user's home directory)
+# User sets in shell (via ~/.bashrc, ~/.zshrc, deployment system, etc.)
 export SERVICENOW_INSTANCE=dev12345.service-now.com
 export SERVICENOW_USERNAME=service-account-username
 export SERVICENOW_API_KEY=your-api-key-here
@@ -89,7 +69,7 @@ export SERVICENOW_API_KEY=your-api-key-here
 # SERVICENOW_PASSWORD=dev-password-only
 ```
 
-**Code reads from:** `os.getenv()` (system environment variables only)
+**Code responsibility:** Only reads from `os.getenv()` - does not manage or load environment variables.
 
 ## References
 
