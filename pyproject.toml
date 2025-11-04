@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "beast-dream-snow-loader"
-version = "0.2.1"
+version = "0.2.2"
 description = "UniFi Dream Machine → ServiceNow CMDB Data Loader with Operational Resilience"
 readme = "README.md"
 requires-python = ">=3.10"
