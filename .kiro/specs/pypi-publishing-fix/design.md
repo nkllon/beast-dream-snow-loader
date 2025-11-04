@@ -101,6 +101,19 @@ class PyPIValidator:
     def test_authentication(self) -> AuthStatus
 ```
 
+### 4. Version Synchronization Validator
+
+**Purpose**: Ensure version consistency between git tags and package metadata
+
+**Interface**:
+```python
+class VersionValidator:
+    def extract_git_tag_version(self, tag: str) -> str
+    def extract_package_version(self, pyproject_path: str) -> str
+    def validate_version_sync(self, git_version: str, package_version: str) -> ValidationResult
+    def check_pypi_version_exists(self, package_name: str, version: str) -> bool
+```
+
 ## Data Models
 
 ### Failure Report
@@ -126,6 +139,18 @@ class QualityIssue:
     severity: str
     message: str
     fix_suggestion: Optional[str]
+```
+
+### Version Validation Result
+```python
+@dataclass
+class ValidationResult:
+    is_synchronized: bool
+    git_version: str
+    package_version: str
+    error_message: Optional[str]
+    pypi_conflict: bool
+    recommended_action: str
 ```
 
 ## Error Handling
@@ -184,15 +209,23 @@ class QualityIssue:
 3. Update workflow if necessary
 4. Validate fixes through testing
 
-### Phase 4: Prevention System Implementation
+### Phase 4: Version Synchronization Implementation
+1. Add version validation step to publishing workflow
+2. Implement fast-fail mechanism for version mismatches
+3. Create clear error messages for version conflicts
+4. Test version validation with mismatched versions
+5. Validate that synchronized versions publish successfully
+
+### Phase 5: Prevention System Implementation
 1. Implement branch protection rules requiring CI checks
 2. Create pre-release quality gate workflow
 3. Configure GitHub repository settings to enforce quality gates
 4. Test prevention system with failing quality checks
 
-### Phase 5: Verification
-1. Test complete publishing workflow
+### Phase 6: Verification
+1. Test complete publishing workflow with version validation
 2. Verify both manual and release-triggered publishing work
 3. Validate prevention system blocks bad releases
-4. Document resolution and prevention measures
-5. Update CI/CD documentation
+4. Test version synchronization prevents PyPI conflicts
+5. Document resolution and prevention measures
+6. Update CI/CD documentation

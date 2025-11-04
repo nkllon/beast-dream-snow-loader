@@ -73,18 +73,26 @@
     - Disable direct pushes to main branch
     - _Requirements: 4.1, 4.3_
   
-  - [ ] 6.2 Create pre-release quality gate workflow
+  - [x] 6.2 Implement version synchronization validation
+    - Add version validation step to publishing workflow
+    - Extract and compare git tag version with pyproject.toml version
+    - Fail fast with clear error message on version mismatch
+    - Prevent PyPI upload conflicts from version desynchronization
+    - _Requirements: 5.1, 5.2, 5.3_
+  
+  - [ ] 6.3 Create pre-release quality gate workflow
     - Create workflow triggered on tag creation attempts
     - Run same quality checks as publishing workflow
     - Block tag creation if quality checks fail
     - Provide clear error messages for failed checks
     - _Requirements: 4.2, 4.4_
   
-  - [ ] 6.3 Test prevention system effectiveness
+  - [ ] 6.4 Test prevention system effectiveness
     - Attempt to create release with failing quality checks
     - Verify system blocks bad release creation
     - Confirm error messages are clear and actionable
-    - _Requirements: 4.5_
+    - Test version synchronization validation with mismatched versions
+    - _Requirements: 4.5, 5.4_
 
 - [ ] 7. Verify end-to-end publishing workflow
   - [x] 7.1 Test release-triggered publishing with clean code
