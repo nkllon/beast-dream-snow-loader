@@ -37,7 +37,7 @@ def verify_records(client: ServiceNowAPIClient):
         print(f"     u_unifi_source_id: {unifi_id}")
         # Show raw data if available
         if 'u_unifi_raw_data' in gw:
-            print(f"     (raw data preserved: ✓)")
+            print("     (raw data preserved: ✓)")
 
     # Query Locations - handle 403 permission error
     print("\n2. Locations (cmdb_ci_site):")
