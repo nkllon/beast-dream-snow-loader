@@ -15,8 +15,12 @@ from beast_dream_snow_loader.servicenow.api_client import ServiceNowAPIClient
 TABLE_GATEWAY_CI = "cmdb_ci_netgear"  # Network Gear (physical hardware - UniFi Dream Machine is a physical device)
 # Alternative: "cmdb_ci_network_node" (subclass of netgear, also valid for network devices)
 TABLE_LOCATION = "cmdb_ci_site"  # Site/Location (cmdb_location doesn't exist)
-TABLE_NETWORK_DEVICE_CI = "cmdb_ci_network_node"  # Network Node (subclass of cmdb_ci_netgear)
-TABLE_ENDPOINT = "cmdb_ci"  # Use base table with sys_class_name (cmdb_endpoint doesn't exist)
+TABLE_NETWORK_DEVICE_CI = (
+    "cmdb_ci_network_node"  # Network Node (subclass of cmdb_ci_netgear)
+)
+TABLE_ENDPOINT = (
+    "cmdb_ci"  # Use base table with sys_class_name (cmdb_endpoint doesn't exist)
+)
 
 
 def load_gateway_ci(client: ServiceNowAPIClient, gateway: ServiceNowGatewayCI) -> dict:
@@ -227,7 +231,7 @@ def load_entities_with_relationships(
             # We need to find the gateway sys_id that corresponds to the site's hostId
             # This requires the original UniFi site model to know the hostId relationship
             # For now, we'll update if host_id is already set in the model
-            update_data: dict[str, Any] = {}
+            location_update_data: dict[str, Any] = {}
             if location.host_id:
                 # Location already has host_id set (but it's a source ID, not sys_id)
                 # Find the corresponding gateway sys_id
@@ -237,10 +241,10 @@ def load_entities_with_relationships(
                         gateway_sys_id = sys_id
                         break
                 if gateway_sys_id:
-                    update_data["host_id"] = gateway_sys_id
+                    location_update_data["host_id"] = gateway_sys_id
 
-            if update_data:
-                client.update_record(TABLE_LOCATION, location_sys_id, update_data)
+            if location_update_data:
+                client.update_record(TABLE_LOCATION, location_sys_id, location_update_data)
 
     # Update devices with host_id and site_id references
     if devices:
@@ -251,7 +255,7 @@ def load_entities_with_relationships(
             if not device_sys_id:
                 continue
 
-            update_data: dict[str, Any] = {}
+            device_update_data: dict[str, Any] = {}
             # Find gateway sys_id if host_id is set
             if device.host_id:
                 gateway_sys_id = None
@@ -260,7 +264,7 @@ def load_entities_with_relationships(
                         gateway_sys_id = sys_id
                         break
                 if gateway_sys_id:
-                    update_data["host_id"] = gateway_sys_id
+                    device_update_data["host_id"] = gateway_sys_id
 
             # Find location sys_id if site_id is set
             if device.site_id:
@@ -270,11 +274,11 @@ def load_entities_with_relationships(
                         location_sys_id = sys_id
                         break
                 if location_sys_id:
-                    update_data["site_id"] = location_sys_id
+                    device_update_data["site_id"] = location_sys_id
 
-            if update_data:
+            if device_update_data:
                 client.update_record(
-                    TABLE_NETWORK_DEVICE_CI, device_sys_id, update_data
+                    TABLE_NETWORK_DEVICE_CI, device_sys_id, device_update_data
                 )
 
     # Update endpoints with site_id and device_id references
@@ -284,7 +288,7 @@ def load_entities_with_relationships(
             if not endpoint_sys_id:
                 continue
 
-            update_data: dict[str, Any] = {}
+            endpoint_update_data: dict[str, Any] = {}
             # Find location sys_id if site_id is set
             if endpoint.site_id:
                 location_sys_id = None
@@ -293,7 +297,7 @@ def load_entities_with_relationships(
                         location_sys_id = sys_id
                         break
                 if location_sys_id:
-                    update_data["site_id"] = location_sys_id
+                    endpoint_update_data["site_id"] = location_sys_id
 
             # Find device sys_id if device_id is set
             if endpoint.device_id:
@@ -303,9 +307,9 @@ def load_entities_with_relationships(
                         device_sys_id = sys_id
                         break
                 if device_sys_id:
-                    update_data["device_id"] = device_sys_id
+                    endpoint_update_data["device_id"] = device_sys_id
 
-            if update_data:
-                client.update_record(TABLE_ENDPOINT, endpoint_sys_id, update_data)
+            if endpoint_update_data:
+                client.update_record(TABLE_ENDPOINT, endpoint_sys_id, endpoint_update_data)
 
     return id_mapping

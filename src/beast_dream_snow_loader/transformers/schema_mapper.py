@@ -61,19 +61,19 @@ class FieldMappingConfig:
 
     def get_host_mappings(self) -> dict[str, str]:
         """Get host → gateway CI field mappings."""
-        return self._host_mappings.copy()
+        return dict(self._host_mappings)
 
     def get_site_mappings(self) -> dict[str, str]:
         """Get site → location field mappings."""
-        return self._site_mappings.copy()
+        return dict(self._site_mappings)
 
     def get_device_mappings(self) -> dict[str, str]:
         """Get device → network device CI field mappings."""
-        return self._device_mappings.copy()
+        return dict(self._device_mappings)
 
     def get_client_mappings(self) -> dict[str, str]:
         """Get client → endpoint field mappings."""
-        return self._client_mappings.copy()
+        return dict(self._client_mappings)
 
 
 def flatten_nested_field(field_path: str) -> str:
