@@ -140,7 +140,9 @@ def main():
         # Step 2: Load sample UniFi data
         print("\n2. Loading UniFi data...")
         hosts, sites, devices, clients = create_sample_unifi_data()
-        print(f"   ✓ Loaded: {len(hosts)} host(s), {len(sites)} site(s), {len(devices)} device(s), {len(clients)} client(s)")
+        print(
+            f"   ✓ Loaded: {len(hosts)} host(s), {len(sites)} site(s), {len(devices)} device(s), {len(clients)} client(s)"
+        )
 
         # Step 3: Transform to ServiceNow models
         print("\n3. Transforming UniFi data to ServiceNow models...")

@@ -9,7 +9,7 @@ Usage:
 
     # Run smoke test (CLI - uses terminal dots)
     python examples/smoke_test.py
-    
+
     # Or run as Streamlit app (uses Streamlit spinner widgets!)
     streamlit run examples/smoke_test.py
 """
@@ -61,7 +61,9 @@ def main():
         except Exception as e:
             # Fallback to base cmdb_ci table if specific table doesn't exist or access denied
             if "Invalid table" in str(e) or "403" in str(e) or "Forbidden" in str(e):
-                print("   ⚠️  Specific table not available or access denied, using base cmdb_ci table...")
+                print(
+                    "   ⚠️  Specific table not available or access denied, using base cmdb_ci table..."
+                )
                 # Fallback to base cmdb_ci table
                 result = client.create_record("cmdb_ci", test_data)
             else:

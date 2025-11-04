@@ -92,7 +92,9 @@ if st.button("🧪 Run Smoke Test", type="primary"):
                 result = load_gateway_ci(client, test_gateway)
             except Exception as e:
                 if "Invalid table" in str(e):
-                    st.warning("⚠️ Specific table not available, using base cmdb_ci table...")
+                    st.warning(
+                        "⚠️ Specific table not available, using base cmdb_ci table..."
+                    )
                     # Fallback to base cmdb_ci table
                     test_data = {
                         "sys_class_name": "cmdb_ci",
@@ -119,4 +121,3 @@ if st.button("🧪 Run Smoke Test", type="primary"):
     except Exception as e:
         st.error(f"❌ Smoke test FAILED: {e}")
         st.exception(e)
-
