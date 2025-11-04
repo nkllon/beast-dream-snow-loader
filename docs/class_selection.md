@@ -1,5 +1,7 @@
 # ServiceNow CI Class Selection Guide
 
+> **Note:** This is the detailed guide for class selection. See [ADR-0001](../adr/0001-servicenow-ci-class-selection.md) for the architectural decision record.
+
 ## Overview
 
 ServiceNow CIs can be queried from multiple class tables due to inheritance hierarchies. This document explains how to choose the "best" class for creating CIs.
