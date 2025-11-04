@@ -1,5 +1,7 @@
 # beast-dream-snow-loader
 
+![PyPI - Version](https://img.shields.io/pypi/v/beast-dream-snow-loader.svg)
+
 **UniFi Dream Machine → ServiceNow CMDB Data Loader**
 
 > Loading raw UniFi network infrastructure data into ServiceNow CMDB for network asset management and discovery.
@@ -26,15 +28,11 @@ beast-dream-snow-loader transforms and loads UniFi network data (hosts, sites, d
 
 ## Project Status
 
-✅ **MVP COMPLETE** - All core features implemented, tested, and published  
-📦 **Version 0.1.0b1** (Beta Pre-Release) - Published to PyPI  
-📋 **Features:** See [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md) for complete feature list  
+✅ **MVP COMPLETE** - All core features implemented, tested, and published
+📦 **Version 0.2.3** (Stable Release) - Published to PyPI
+🗓️ **Release Cadence:** Monthly stable releases with interim patches as needed
+📋 **Features:** See [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md) for complete feature list
 🎉 **Status:** See [docs/MVP_COMPLETE.md](docs/MVP_COMPLETE.md) for MVP completion summary
-
-**Note:** This is a beta pre-release. Pre-releases are not installed by default:
-```bash
-pip install --pre beast-dream-snow-loader
-```
 
 See [Known Limitations](docs/MVP_FEATURES.md#known-limitations) before using.
 
@@ -63,9 +61,9 @@ UniFi data structure (from `docs/unifi_schema.sql`):
 
 1. **Install:**
    ```bash
-   pip install --pre beast-dream-snow-loader
+   pip install beast-dream-snow-loader
    # Or with uv:
-   uv pip install --pre beast-dream-snow-loader
+   uv pip install beast-dream-snow-loader
    ```
 
 2. **Configure ServiceNow:**

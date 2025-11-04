@@ -31,7 +31,7 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Networking",
 ]
-# Note: Version 0.1.0b1 is a BETA pre-release
+# Note: Version 0.2.3 is the current stable release
 # Pre-releases are not installed by default (require --pre flag)
 # This indicates the package is still work in progress
 dependencies = [

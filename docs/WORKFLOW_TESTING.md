@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Version:** `0.1.0b1` (Beta Pre-Release)
+**Version:** `0.2.3` (Stable Release)
 
 **Workflows Ready:**
 - ✅ CI workflow (runs on push/PR)
@@ -54,15 +54,14 @@
 **To Test (Dry Run):**
 1. Go to GitHub → Actions → "Publish to PyPI"
 2. Click "Run workflow"
-3. Enter version: `0.1.0b1`
+3. Enter version: `0.2.3`
 4. Click "Run workflow"
 5. Watch it run (should stop before actually publishing if not a release)
 
 **To Test (Actual Release):**
 1. Create GitHub release:
-   - Tag: `v0.1.0b1`
-   - Title: `v0.1.0b1 - Beta Pre-Release`
-   - Mark as pre-release
+   - Tag: `v0.2.3`
+   - Title: `v0.2.3 - Stable Release`
    - Publish
 2. Workflow will automatically run and publish to PyPI
 
@@ -110,7 +109,7 @@
 **To Test:**
 1. Go to GitHub → Actions → "Test Publish (Dry Run)"
 2. Click "Run workflow"
-3. Enter test version: `0.1.0b1`
+3. Enter test version: `0.2.3`
 4. Click "Run workflow"
 5. Verify it completes successfully
 
@@ -146,8 +145,7 @@ After pushing the test commit, the CI workflow should be running:
    - Push to trigger analysis
 
 4. **Create GitHub Release:**
-   - When ready, create release with tag `v0.1.0b1`
-   - Mark as pre-release
+   - When ready, create release with tag `v0.2.3`
    - Workflow will publish to PyPI automatically
 
 ## Troubleshooting

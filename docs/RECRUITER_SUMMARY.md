@@ -112,13 +112,13 @@ Transforms and loads UniFi network infrastructure data (gateways, sites, devices
 
 ## Project Status
 
-**Version:** 0.1.0b1 (Beta Pre-Release)  
-**Status:** MVP Complete, Ready for Beta Testing  
+**Version:** 0.2.3 (Stable Release)
+**Status:** MVP Complete, Actively Maintained Stable Release
 **License:** MIT (Open Source)
 
 **Available Now:**
 - GitHub repository (public)
-- PyPI package (beta pre-release, requires `--pre` flag)
+- PyPI package (`pip install beast-dream-snow-loader`)
 - Complete documentation
 - Working examples
 
@@ -145,7 +145,7 @@ Transforms and loads UniFi network infrastructure data (gateways, sites, devices
 **Complete Workflow Example:**
 ```bash
 # Install
-pip install --pre beast-dream-snow-loader
+pip install beast-dream-snow-loader
 
 # Configure
 export SERVICENOW_INSTANCE="your-instance.service-now.com"
@@ -165,9 +165,9 @@ python examples/complete_workflow.py
 
 ## Next Steps
 
-1. **Beta Testing:** Gather feedback from early users
-2. **Enhancements:** Add incremental sync, table creation
-3. **Production Release:** After beta testing (0.1.0)
+1. **Adoption:** Partner with design partners running ServiceNow for real-world validation
+2. **Enhancements:** Add incremental sync and table creation in the 0.2.x series
+3. **Next Milestone:** Define roadmap for the 0.3.0 feature release
 
 ## Contact
 

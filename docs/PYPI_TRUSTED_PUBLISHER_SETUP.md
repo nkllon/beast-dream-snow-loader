@@ -57,7 +57,7 @@ After setup, trigger a publish workflow:
 
 1. Go to GitHub Actions → "Publish to PyPI" workflow
 2. Click "Run workflow"
-3. Enter version: `0.1.0b1`
+3. Enter version: `0.2.3`
 4. Click "Run workflow"
 
 **Expected Result:**
