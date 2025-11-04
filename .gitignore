@@ -11,3 +11,6 @@ __pycache__/
 *.pyd
 .Python
 docs/LLM_PROMPT_RESUME_EMAIL.md
+
+# Auto-generated version file
+src/beast_dream_snow_loader/_version.py
