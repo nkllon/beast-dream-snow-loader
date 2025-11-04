@@ -10,7 +10,7 @@ jobs:
     name: Validate Tag for Release
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write  # Required to create GitHub release
       pull-requests: read
     
     steps:
@@ -85,12 +85,83 @@ jobs:
           uv build
           echo "✓ Package builds successfully"
 
+      - name: Check if release already exists
+        id: check_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Release $TAG_NAME already exists, skipping creation"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✓ Release $TAG_NAME does not exist, will create"
+          fi
+
+      - name: Extract release notes
+        id: release_notes
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          TAG_VERSION="${{ steps.tag_version.outputs.version }}"
+          # Extract section from RELEASE_NOTES.md for this version
+          # Pattern: ## [VERSION] - DATE - TITLE ... content ... ---
+          awk "/^## \[$TAG_VERSION\]/,/^---$/ {if (/^---$/) exit; print}" RELEASE_NOTES.md > /tmp/release_notes.txt || {
+            echo "⚠️  Warning: Could not extract release notes for version $TAG_VERSION"
+            echo "Release $TAG_VERSION" > /tmp/release_notes.txt
+          }
+          
+          # Remove the header line (## [VERSION] - DATE - TITLE)
+          sed -i '' '1d' /tmp/release_notes.txt 2>/dev/null || sed -i '1d' /tmp/release_notes.txt
+          
+          echo "Release notes extracted:"
+          head -5 /tmp/release_notes.txt
+
+      - name: Extract release title
+        id: release_title
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          TAG_VERSION="${{ steps.tag_version.outputs.version }}"
+          # Extract title from RELEASE_NOTES.md (second line after ## [VERSION] - DATE - TITLE)
+          TITLE=$(awk "/^## \[$TAG_VERSION\]/ {getline; if (match(\$0, /- (.+)$/, arr)) print arr[1]; else print \"Release $TAG_VERSION\"}" RELEASE_NOTES.md)
+          
+          if [ -z "$TITLE" ] || [ "$TITLE" = "Release $TAG_VERSION" ]; then
+            TITLE="Release $TAG_VERSION"
+          fi
+          
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "Release title: $TITLE"
+          
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          TITLE="${{ steps.release_title.outputs.title }}"
+          
+          echo "Creating GitHub release: $TAG_NAME"
+          echo "Title: $TAG_NAME - $TITLE"
+          echo "Notes file: /tmp/release_notes.txt"
+          
+          # Create release using GitHub CLI
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME - $TITLE" \
+            --notes-file /tmp/release_notes.txt \
+            --target "$TAG_NAME"
+          
+          echo "✅ GitHub release created successfully!"
+          echo "Release URL: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
+          echo ""
+          echo "The publish workflow will now automatically run and publish to PyPI."
+          
       - name: Validation summary
         run: |
           echo "✅ Pre-release validation passed!"
           echo "Tag: ${{ github.ref_name }}"
           echo "Commit: $(git rev-parse HEAD)"
           echo "Version: ${{ steps.tag_version.outputs.version }}"
+          echo "GitHub Release: Created automatically"
           echo ""
-          echo "This tag is ready for release creation."
+          echo "The publish workflow will now automatically run and publish to PyPI."
 
