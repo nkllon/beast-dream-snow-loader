@@ -523,11 +523,29 @@ From `openflow-pr-update-pack/OpenFlow-Playground/agent_network_personalities.md
 
 **CRITICAL: NEVER ASK THE USER FOR VERSION/TAG INFORMATION**
 
-When working with releases:
-- **ALWAYS** read version from `pyproject.toml` (field: `project.version`)
+**Version Determination:**
+- **ALWAYS** recommend the next version based on semantic versioning and changes made
+- **ALWAYS** analyze git history, commit messages, and changes to determine version bump (MAJOR.MINOR.PATCH)
+- **ALWAYS** update `pyproject.toml` with the recommended version before creating release
 - **ALWAYS** construct tag as `v{version}` (e.g., `v0.3.0`)
 - **ALWAYS** extract release notes from `RELEASE_NOTES.md` for the version
-- **NEVER** ask "what version?" or "what tag?" - the information is in the codebase
+- **NEVER** ask "what version?" or "what tag?" - determine it intelligently from changes
+
+**Semantic Versioning Rules:**
+- **MAJOR** (X.0.0): Breaking changes, API incompatibilities, major architectural changes
+- **MINOR** (0.X.0): New features, backward-compatible enhancements, significant additions
+- **PATCH** (0.0.X): Bug fixes, documentation updates, minor improvements, refactoring
+
+**Version Recommendation Process:**
+1. Read current version from `pyproject.toml`
+2. Analyze changes since last release:
+   - Check git log for breaking changes, new features, bug fixes
+   - Review commit messages for semantic indicators
+   - Assess impact of changes (breaking vs. additive vs. fix)
+3. Recommend next version based on semantic versioning
+4. Update `pyproject.toml` with recommended version
+5. Update `__init__.py` and `sonar-project.properties` to match
+6. Proceed with release using determined version
 
 **Release Automation:**
 - Tag creation triggers pre-release validation workflow
@@ -537,9 +555,16 @@ When working with releases:
 
 **Example:**
 ```bash
-# Extract version from pyproject.toml
-VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
-TAG="v${VERSION}"
+# Read current version
+CURRENT_VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+
+# Analyze changes and recommend next version
+# (Based on semantic versioning: breaking=MAJOR, features=MINOR, fixes=PATCH)
+# ... determine NEXT_VERSION based on changes ...
+
+# Update pyproject.toml with recommended version
+# Then construct tag
+TAG="v${NEXT_VERSION}"
 # Use TAG for all release operations
 ```
 
@@ -548,6 +573,7 @@ TAG="v${VERSION}"
 - Ask user for tag name
 - Ask user to confirm version
 - Create tags with wrong version
+- Guess version without analyzing changes
 
 ### Common Tools & Patterns
 
@@ -623,7 +649,7 @@ When working on beast projects, ensure:
 - ✅ Secure credential management (1Password, not hardcoded)
 - ✅ Maintain documentation (update agent guidance when patterns change)
 - ✅ Apply principle-level thinking, not just step-by-step following
-- ✅ **NEVER ask for version/tag** - always read from `pyproject.toml` and construct tag as `v{version}`
+- ✅ **NEVER ask for version/tag** - intelligently recommend next version based on semantic versioning and changes, then update `pyproject.toml` and construct tag as `v{version}`
 
 ## References
 

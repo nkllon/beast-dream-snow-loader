@@ -4,21 +4,38 @@
 
 **CRITICAL RULE: NEVER ASK THE USER FOR VERSION OR TAG INFORMATION**
 
-All version and tag information MUST be determined automatically from the codebase:
+All version and tag information MUST be determined intelligently by analyzing changes and applying semantic versioning:
+
+### Version Recommendation Process
+
+**Agents MUST:**
+1. Read current version from `pyproject.toml` (field: `project.version`)
+2. Analyze changes since last release:
+   - Review git log and commit messages
+   - Identify breaking changes, new features, bug fixes
+   - Assess impact and scope of changes
+3. Apply semantic versioning rules to recommend next version:
+   - **MAJOR** (X.0.0): Breaking changes, API incompatibilities
+   - **MINOR** (0.X.0): New features, backward-compatible enhancements
+   - **PATCH** (0.0.X): Bug fixes, documentation, minor improvements
+4. Update `pyproject.toml` with recommended version
+5. Update `__init__.py` and `sonar-project.properties` to match
+6. Proceed with release using determined version
 
 ### Version Source of Truth
 
 **Primary Source:** `pyproject.toml`
 - Field: `project.version`
 - Format: `MAJOR.MINOR.PATCH` (e.g., `0.3.0`)
-- **This is the single source of truth for version**
+- **Must be updated with recommended version before release**
 
 ### Tag Construction
 
-**Rule:** Tag is ALWAYS `v{version}` where `{version}` comes from `pyproject.toml`
+**Rule:** Tag is ALWAYS `v{version}` where `{version}` is the recommended/updated version in `pyproject.toml`
 
 **Example:**
-- `pyproject.toml` has `version = "0.3.0"`
+- Agent analyzes changes and recommends `0.3.0`
+- Agent updates `pyproject.toml` to `version = "0.3.0"`
 - Tag is ALWAYS `v0.3.0`
 - **No exceptions, no questions, no variations**
 
@@ -33,16 +50,34 @@ All version and tag information MUST be determined automatically from the codeba
 
 **For Agents:**
 ```bash
-# Extract version from pyproject.toml
-VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+# 1. Read current version
+CURRENT_VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
 
-# Construct tag
-TAG="v${VERSION}"
+# 2. Analyze changes (git log, commit messages, etc.)
+# Determine version bump type: MAJOR, MINOR, or PATCH
+# Based on: breaking changes, new features, bug fixes
 
-# Use TAG for all operations
-git tag -a "$TAG" -m "Release $VERSION: Description"
+# 3. Calculate next version
+# NEXT_VERSION = bump(CURRENT_VERSION, bump_type)
+
+# 4. Update pyproject.toml with NEXT_VERSION
+# Update __init__.py
+# Update sonar-project.properties
+
+# 5. Construct tag
+TAG="v${NEXT_VERSION}"
+
+# 6. Use TAG for all operations
+git tag -a "$TAG" -m "Release $NEXT_VERSION: Description"
 git push origin "$TAG"
 ```
+
+**Semantic Versioning Analysis:**
+- Check for breaking changes (API changes, removed features) → MAJOR bump
+- Check for new features (backward-compatible additions) → MINOR bump
+- Check for bug fixes, docs, refactoring → PATCH bump
+- Review commit messages for semantic indicators
+- Consider scope and impact of changes
 
 **For Python Scripts:**
 ```python
@@ -70,12 +105,17 @@ with open('pyproject.toml', 'rb') as f:
 - ❌ Ask user "What version should I use?"
 - ❌ Ask user "What tag should I create?"
 - ❌ Ask user "What should the tag name be?"
+- ❌ Ask user "Should this be a patch, minor, or major release?"
 - ❌ Create tags with different format (e.g., `0.3.0` instead of `v0.3.0`)
-- ❌ Guess or infer version from other sources
+- ❌ Guess version without analyzing changes
 - ❌ Ask user to confirm version before creating tag
+- ❌ Use current version without considering changes
 
 **ALWAYS:**
-- ✅ Read version from `pyproject.toml`
+- ✅ Analyze changes since last release
+- ✅ Apply semantic versioning rules intelligently
+- ✅ Recommend next version based on change analysis
+- ✅ Update `pyproject.toml` with recommended version
 - ✅ Construct tag as `v{version}`
 - ✅ Extract release notes from `RELEASE_NOTES.md`
 - ✅ Proceed automatically without asking
@@ -102,11 +142,13 @@ All version fields must be synchronized:
 
 ### Rationale
 
-1. **Single Source of Truth:** `pyproject.toml` is the canonical version source
-2. **Consistency:** Tag format is always `v{version}` - no variations
-3. **Automation:** No user interaction required - fully automated
-4. **Error Prevention:** Can't create wrong tag if reading from source of truth
-5. **User Experience:** User doesn't need to remember version or tag format
+1. **Intelligent Versioning:** Agent analyzes changes and applies semantic versioning correctly
+2. **Single Source of Truth:** `pyproject.toml` is the canonical version source (after update)
+3. **Consistency:** Tag format is always `v{version}` - no variations
+4. **Automation:** No user interaction required - fully automated
+5. **Error Prevention:** Can't create wrong tag if analyzing changes and updating correctly
+6. **User Experience:** User doesn't need to remember version, tag format, or semantic versioning rules
+7. **Accuracy:** Agent is in best position to analyze changes and recommend correct version
 
 ### Integration with Immutability Principle
 
