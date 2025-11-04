@@ -304,6 +304,88 @@ class ServiceNowAPIClient:
         return self.retry_manager.execute_with_retry(make_request, operation_name=operation_name)
 ```
 
+### 7. Configuration Manager (`beast_dream_snow_loader/operations/config.py`)
+
+```python
+from enum import Enum
+from typing import Optional
+from pydantic import BaseModel
+
+class Environment(Enum):
+    DEVELOPMENT = "development"
+    TESTING = "testing"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    UNKNOWN = "unknown"
+
+class ConfigurationManager:
+    def load_configuration(
+        self, 
+        config_file: Optional[str] = None,
+        environment: Optional[Environment] = None
+    ) -> OperationalConfig:
+        """Load configuration with explicit environment specification.
+        
+        Environment Detection Strategy:
+        1. Use explicitly provided environment parameter
+        2. Check BEAST_ENVIRONMENT environment variable
+        3. Fail fast if no environment specified (no auto-detection)
+        
+        This approach ensures:
+        - Predictable behavior across deployments
+        - Testable configuration without mocks
+        - No side effects from filesystem artifacts
+        - Clear failure modes when misconfigured
+        """
+        if environment is None:
+            env_var = os.getenv("BEAST_ENVIRONMENT")
+            if not env_var:
+                raise ValueError(
+                    "Environment must be explicitly specified via BEAST_ENVIRONMENT "
+                    "environment variable or load_configuration(environment=...) parameter"
+                )
+            try:
+                environment = Environment(env_var.lower())
+            except ValueError:
+                raise ValueError(
+                    f"Invalid BEAST_ENVIRONMENT value: {env_var}. "
+                    f"Must be one of: {[e.value for e in Environment]}"
+                )
+        
+        # Load base configuration
+        config_data = self._load_base_config(config_file)
+        
+        # Apply environment-specific overrides
+        self._apply_environment_overrides(config_data, environment)
+        
+        return OperationalConfig(**config_data)
+    
+    def _apply_environment_overrides(self, config_data: dict, environment: Environment):
+        """Apply environment-specific configuration overrides."""
+        if environment == Environment.DEVELOPMENT:
+            config_data.setdefault("logging", {}).setdefault("level", "DEBUG")
+            config_data.setdefault("retry", {}).setdefault("max_attempts", 2)
+        elif environment == Environment.TESTING:
+            config_data.setdefault("logging", {}).setdefault("level", "WARNING")
+            config_data.setdefault("retry", {}).setdefault("max_attempts", 1)
+        elif environment == Environment.PRODUCTION:
+            config_data.setdefault("logging", {}).setdefault("level", "INFO")
+            config_data.setdefault("retry", {}).setdefault("max_attempts", 5)
+        # UNKNOWN and STAGING use base defaults
+```
+
+**Design Rationale:**
+
+The configuration system uses **explicit environment specification** rather than auto-detection to ensure:
+
+1. **Predictable Behavior**: Same configuration logic produces same results regardless of deployment artifacts
+2. **Testable Design**: Tests can specify environment explicitly without complex mocking
+3. **Fail-Fast Principle**: Missing environment configuration causes immediate, clear failure
+4. **No Side Effects**: Configuration doesn't depend on filesystem state, hostname patterns, or other environmental artifacts
+5. **Clear Contracts**: Environment must be explicitly declared, eliminating guesswork
+
+This satisfies the requirement "detect execution environment and adapt behavior accordingly" through explicit declaration rather than implicit detection, avoiding the complexity and unpredictability of auto-detection logic.
+
 ## Data Models
 
 ### Configuration Models

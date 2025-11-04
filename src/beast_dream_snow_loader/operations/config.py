@@ -168,83 +168,25 @@ class ConfigurationManager:
         self._config: OperationalConfig | None = None
         self._environment_info: dict[str, Any] = {}
 
-    def detect_environment(self) -> Environment:
-        """Detect the current deployment environment."""
-        # Check explicit environment variable
-        env_var = os.getenv("BEAST_ENVIRONMENT", "").lower()
-        if env_var:
-            try:
-                return Environment(env_var)
-            except ValueError:
-                self.logger.warning(
-                    f"Invalid BEAST_ENVIRONMENT value: {env_var}",
-                    environment_detection=True,
-                )
+    def _get_environment(self, environment: Environment | None = None) -> Environment:
+        """Get environment with explicit specification or from BEAST_ENVIRONMENT."""
+        if environment is not None:
+            return environment
 
-        # Check common environment indicators
-        indicators = {
-            Environment.DEVELOPMENT: [
-                lambda: os.getenv("NODE_ENV") == "development",
-                lambda: os.getenv("FLASK_ENV") == "development",
-                lambda: os.getenv("DJANGO_DEBUG") == "True",
-                lambda: "dev" in platform.node().lower(),
-                lambda: os.path.exists(".git"),  # Git repository present
-                lambda: os.path.exists("pyproject.toml")
-                and not os.getenv("CI"),  # Local development
-            ],
-            Environment.TESTING: [
-                lambda: os.getenv("NODE_ENV") == "test",
-                lambda: os.getenv("PYTEST_CURRENT_TEST") is not None,
-                lambda: os.getenv("CI") is not None,  # CI environment
-                lambda: "test" in platform.node().lower(),
-            ],
-            Environment.STAGING: [
-                lambda: os.getenv("NODE_ENV") == "staging",
-                lambda: "staging" in platform.node().lower(),
-                lambda: "stg" in platform.node().lower(),
-            ],
-            Environment.PRODUCTION: [
-                lambda: os.getenv("NODE_ENV") == "production",
-                lambda: "prod" in platform.node().lower(),
-                lambda: "production" in platform.node().lower(),
-                lambda: not os.path.exists(".git")
-                and os.getenv("CI") is None,  # Deployed without git
-            ],
-        }
+        env_var = os.getenv("BEAST_ENVIRONMENT")
+        if not env_var:
+            raise ValueError(
+                "Environment must be explicitly specified via BEAST_ENVIRONMENT "
+                "environment variable or load_configuration(environment=...) parameter"
+            )
 
-        # Score each environment based on indicators
-        scores = {}
-        for env, checks in indicators.items():
-            score = sum(1 for check in checks if self._safe_check(check))
-            scores[env] = score
-
-        # Return environment with highest score, or UNKNOWN if no clear winner
-        if scores:
-            best_env = max(scores, key=scores.get)
-            if scores[best_env] > 0:
-                self.logger.info(
-                    f"Detected environment: {best_env.value}",
-                    environment=best_env.value,
-                    detection_scores={
-                        env.value: score for env, score in scores.items()
-                    },
-                    environment_detection=True,
-                )
-                return best_env
-
-        self.logger.warning(
-            "Could not detect environment, defaulting to UNKNOWN",
-            detection_scores=scores,
-            environment_detection=True,
-        )
-        return Environment.UNKNOWN
-
-    def _safe_check(self, check_func) -> bool:
-        """Safely execute an environment check function."""
         try:
-            return bool(check_func())
-        except Exception:
-            return False
+            return Environment(env_var.lower())
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid BEAST_ENVIRONMENT value: {env_var}. "
+                f"Must be one of: {[e.value for e in Environment]}"
+            ) from e
 
     def collect_environment_info(self) -> dict[str, Any]:
         """Collect comprehensive environment information."""
@@ -301,7 +243,10 @@ class ConfigurationManager:
         return info
 
     def load_configuration(
-        self, config_file: str | None = None, environment_overrides: bool = True
+        self,
+        config_file: str | None = None,
+        environment_overrides: bool = True,
+        environment: Environment | None = None,
     ) -> OperationalConfig:
         """Load operational configuration from file and environment."""
         # Start with default configuration
@@ -335,14 +280,10 @@ class ConfigurationManager:
             env_config = self._load_from_environment()
             self._merge_config(config_data, env_config)
 
-        # Detect environment if not specified
+        # Get environment (explicit or from BEAST_ENVIRONMENT)
         if "environment" not in config_data:
-            detected_env = self.detect_environment()
-            config_data["environment"] = (
-                detected_env.value
-                if hasattr(detected_env, "value")
-                else str(detected_env)
-            )
+            env = self._get_environment(environment)
+            config_data["environment"] = env.value
 
         # Apply environment-specific defaults
         self._apply_environment_defaults(config_data)
@@ -460,7 +401,7 @@ class ConfigurationManager:
             except ValueError:
                 environment = Environment.UNKNOWN
 
-        # Environment-specific defaults
+        # Apply environment-specific defaults
         if environment == Environment.DEVELOPMENT:
             # Development: More verbose logging, shorter timeouts
             config_data.setdefault("logging", {}).setdefault("level", "DEBUG")
@@ -488,6 +429,8 @@ class ConfigurationManager:
                 "failure_threshold", 10
             )
             config_data.setdefault("metrics", {}).setdefault("max_history_hours", 72)
+
+        # UNKNOWN and STAGING use base defaults (INFO logging, 3 retry attempts, etc.)
 
     def get_configuration(self) -> OperationalConfig | None:
         """Get current configuration."""

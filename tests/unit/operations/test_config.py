@@ -194,66 +194,36 @@ class TestConfigurationManager:
         """Set up test fixtures."""
         self.config_manager = ConfigurationManager()
 
-    @patch("platform.node")
     @patch("os.getenv")
-    def test_detect_environment_explicit(self, mock_getenv, mock_node):
-        """Test environment detection with explicit environment variable."""
-        mock_getenv.side_effect = lambda key, default="": {
-            "BEAST_ENVIRONMENT": "production"
-        }.get(key, default)
+    def test_get_environment_explicit(self, mock_getenv):
+        """Test environment retrieval with explicit BEAST_ENVIRONMENT variable."""
+        mock_getenv.return_value = "production"
 
-        env = self.config_manager.detect_environment()
+        env = self.config_manager._get_environment()
         assert env == Environment.PRODUCTION
 
-    @patch("platform.node")
-    @patch("os.getenv")
-    @patch("os.path.exists")
-    def test_detect_environment_development_indicators(
-        self, mock_exists, mock_getenv, mock_node
-    ):
-        """Test environment detection with development indicators."""
-        mock_getenv.side_effect = lambda key, default="": {
-            "NODE_ENV": "development",
-            "BEAST_ENVIRONMENT": "",
-        }.get(key, default)
-        mock_node.return_value = "dev-machine"
-        mock_exists.return_value = True  # .git exists
-
-        env = self.config_manager.detect_environment()
+    def test_get_environment_explicit_parameter(self):
+        """Test environment retrieval with explicit parameter."""
+        env = self.config_manager._get_environment(Environment.DEVELOPMENT)
         assert env == Environment.DEVELOPMENT
 
-    @patch("platform.node")
     @patch("os.getenv")
-    def test_detect_environment_testing_indicators(self, mock_getenv, mock_node):
-        """Test environment detection with testing indicators."""
-        mock_getenv.side_effect = lambda key, default="": {
-            "CI": "true",
-            "PYTEST_CURRENT_TEST": "test_something.py::test_function",
-            "BEAST_ENVIRONMENT": "",
-        }.get(key, default)
-        mock_node.return_value = "ci-runner"
+    def test_get_environment_missing_raises_error(self, mock_getenv):
+        """Test that missing BEAST_ENVIRONMENT raises clear error."""
+        mock_getenv.return_value = None
 
-        env = self.config_manager.detect_environment()
-        assert env == Environment.TESTING
+        with pytest.raises(
+            ValueError, match="Environment must be explicitly specified"
+        ):
+            self.config_manager._get_environment()
 
-    @patch("platform.node")
     @patch("os.getenv")
-    @patch("os.path.exists")
-    def test_detect_environment_production_indicators(
-        self, mock_exists, mock_getenv, mock_node
-    ):
-        """Test environment detection with production indicators."""
-        mock_getenv.side_effect = lambda key, default="": {
-            "NODE_ENV": "production",
-            "BEAST_ENVIRONMENT": "",
-            "PYTEST_CURRENT_TEST": None,  # Not in pytest
-            "CI": None,  # Not in CI
-        }.get(key, default)
-        mock_node.return_value = "prod-server-01"
-        mock_exists.return_value = False  # No .git directory (production indicator)
+    def test_get_environment_invalid_value_raises_error(self, mock_getenv):
+        """Test that invalid BEAST_ENVIRONMENT value raises clear error."""
+        mock_getenv.return_value = "invalid_env"
 
-        env = self.config_manager.detect_environment()
-        assert env == Environment.PRODUCTION
+        with pytest.raises(ValueError, match="Invalid BEAST_ENVIRONMENT value"):
+            self.config_manager._get_environment()
 
     @pytest.mark.skip(
         reason="BACKLOG-001: Environment detection logic needs fix for CI empty string handling"
@@ -312,16 +282,72 @@ class TestConfigurationManager:
         # Should exclude sensitive env vars
         assert "SECRET_KEY" not in info["environment_variables"]
 
-    @pytest.mark.skip(
-        reason="BACKLOG-003: Environment-specific defaults override expected test defaults"
-    )
     def test_load_configuration_defaults(self):
-        """Test loading configuration with defaults."""
+        """Test loading configuration with explicit UNKNOWN environment."""
+        config = self.config_manager.load_configuration(environment=Environment.UNKNOWN)
+
+        assert isinstance(config, OperationalConfig)
+        assert config.logging.level == "INFO"  # Base default
+        assert config.retry.max_attempts == 3  # Base default
+
+    def test_load_configuration_explicit_development(self):
+        """Test loading configuration with explicit development environment."""
+        config = self.config_manager.load_configuration(
+            environment=Environment.DEVELOPMENT
+        )
+
+        assert isinstance(config, OperationalConfig)
+        assert config.logging.level == "DEBUG"  # Development default
+        assert config.retry.max_attempts == 2  # Development default
+
+    def test_load_configuration_explicit_production(self):
+        """Test loading configuration with explicit production environment."""
+        config = self.config_manager.load_configuration(
+            environment=Environment.PRODUCTION
+        )
+
+        assert isinstance(config, OperationalConfig)
+        assert config.logging.level == "INFO"  # Production default
+        assert config.retry.max_attempts == 5  # Production default
+
+    @patch("os.getenv")
+    def test_load_configuration_from_beast_environment_var(self, mock_getenv):
+        """Test loading configuration from BEAST_ENVIRONMENT variable."""
+
+        def mock_getenv_func(key, default=None):
+            if key == "BEAST_ENVIRONMENT":
+                return "production"
+            return default
+
+        mock_getenv.side_effect = mock_getenv_func
+
         config = self.config_manager.load_configuration()
 
         assert isinstance(config, OperationalConfig)
-        assert config.logging.level == "INFO"  # Default
-        assert config.retry.max_attempts == 3  # Default
+        assert config.logging.level == "INFO"
+        assert config.retry.max_attempts == 5
+
+    def test_load_configuration_missing_environment_raises_error(self):
+        """Test that missing environment specification raises clear error."""
+        with patch("os.getenv", return_value=None):
+            with pytest.raises(
+                ValueError, match="Environment must be explicitly specified"
+            ):
+                self.config_manager.load_configuration()
+
+    @patch("os.getenv")
+    def test_load_configuration_invalid_environment_raises_error(self, mock_getenv):
+        """Test that invalid BEAST_ENVIRONMENT value raises clear error."""
+
+        def mock_getenv_func(key, default=None):
+            if key == "BEAST_ENVIRONMENT":
+                return "invalid_env"
+            return default
+
+        mock_getenv.side_effect = mock_getenv_func
+
+        with pytest.raises(ValueError, match="Invalid configuration"):
+            self.config_manager.load_configuration()
 
     @pytest.mark.skip(
         reason="BACKLOG-002: Configuration type coercion - environment field string vs enum mismatch"
@@ -387,33 +413,24 @@ class TestConfigurationManager:
     def test_load_configuration_environment_specific_defaults(self):
         """Test environment-specific default application."""
         # Test development defaults
-        with patch.object(
-            self.config_manager,
-            "detect_environment",
-            return_value=Environment.DEVELOPMENT,
-        ):
-            config = self.config_manager.load_configuration()
-            assert config.logging.level == "DEBUG"
-            assert config.retry.max_attempts == 2
+        config = self.config_manager.load_configuration(
+            environment=Environment.DEVELOPMENT
+        )
+        assert config.logging.level == "DEBUG"
+        assert config.retry.max_attempts == 2
 
         # Test production defaults
-        with patch.object(
-            self.config_manager,
-            "detect_environment",
-            return_value=Environment.PRODUCTION,
-        ):
-            config = self.config_manager.load_configuration()
-            assert config.logging.level == "INFO"
-            assert config.retry.max_attempts == 5
+        config = self.config_manager.load_configuration(
+            environment=Environment.PRODUCTION
+        )
+        assert config.logging.level == "INFO"
+        assert config.retry.max_attempts == 5
 
         # Test testing defaults
-        with patch.object(
-            self.config_manager, "detect_environment", return_value=Environment.TESTING
-        ):
-            config = self.config_manager.load_configuration()
-            assert config.logging.level == "WARNING"
-            assert config.retry.max_attempts == 1
-            assert config.metrics.collection_enabled is False
+        config = self.config_manager.load_configuration(environment=Environment.TESTING)
+        assert config.logging.level == "WARNING"
+        assert config.retry.max_attempts == 1
+        assert config.metrics.collection_enabled is False
 
     def test_validate_configuration_valid(self):
         """Test configuration validation with valid config."""
@@ -459,7 +476,9 @@ class TestConfigurationManager:
 
     def test_get_configuration_after_load(self):
         """Test getting configuration after loading."""
-        loaded_config = self.config_manager.load_configuration()
+        loaded_config = self.config_manager.load_configuration(
+            environment=Environment.UNKNOWN
+        )
         retrieved_config = self.config_manager.get_configuration()
 
         assert retrieved_config is loaded_config
@@ -490,30 +509,3 @@ class TestConfigurationManager:
             "metrics": {"enabled": True},
         }
         assert base == expected
-
-    def test_safe_check_success(self):
-        """Test safe check with successful function."""
-
-        def success_check():
-            return True
-
-        result = self.config_manager._safe_check(success_check)
-        assert result is True
-
-    def test_safe_check_failure(self):
-        """Test safe check with failing function."""
-
-        def failing_check():
-            raise Exception("Check failed")
-
-        result = self.config_manager._safe_check(failing_check)
-        assert result is False
-
-    def test_safe_check_falsy_return(self):
-        """Test safe check with falsy return value."""
-
-        def falsy_check():
-            return None
-
-        result = self.config_manager._safe_check(falsy_check)
-        assert result is False
