@@ -59,20 +59,29 @@
 
 ## Known Limitations
 
-1. **ServiceNow Plugin Dependency:**
+1. **ServiceNow CI Class Selection (MVP Constraint):**
+   - Class mappings are hardcoded for MVP (see ADR-0001)
+   - Gateway: `cmdb_ci_netgear` (physical hardware)
+   - Location: `cmdb_ci_site`
+   - Network Device: `cmdb_ci_network_node`
+   - Endpoint: `cmdb_ci` (base table with `sys_class_name`)
+   - Future: Configurable class mappings per device type
+   - **Reference:** [ADR-0001](../adr/0001-servicenow-ci-class-selection.md)
+
+2. **ServiceNow Plugin Dependency:**
    - Full table support requires CMDB CI Class Models plugin
    - Plugin may require CMDB subscription (needs verification)
    - Fallback to base `cmdb_ci` table available
 
-2. **Table Creation:**
+3. **Table Creation:**
    - Not yet implemented (planned for future release)
    - Currently assumes tables exist or uses base `cmdb_ci`
 
-3. **Incremental Sync:**
+4. **Incremental Sync:**
    - Not yet implemented (planned for future release)
    - Currently does full loads only
 
-4. **Error Recovery:**
+5. **Error Recovery:**
    - Basic error handling implemented
    - Retry logic not yet implemented
 
@@ -112,7 +121,13 @@
    - Bulk data loading
    - Better error handling for large datasets
 
-8. **Observatory Gateway Experiment** 🔄
+8. **Configurable Class Mappings** 🔄
+   - Support configuration of ServiceNow CI class mappings per device type
+   - Allow dynamic class selection based on device characteristics
+   - Support custom class mappings via configuration
+   - **MVP Constraint:** Class mappings are hardcoded (see ADR-0001)
+
+9. **Observatory Gateway Experiment** 🔄
    - Cloudflare Workers gateway for public API access
    - Performance benchmarking (gateway vs direct)
    - Rate limiting behavior testing

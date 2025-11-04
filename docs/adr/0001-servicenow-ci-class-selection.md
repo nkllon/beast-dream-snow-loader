@@ -3,7 +3,7 @@
 **Status:** Accepted  
 **Date:** 2025-11-03  
 **Deciders:** Development Team  
-**Tags:** servicenow, cmdb, class-selection, architecture
+**Tags:** servicenow, cmdb, class-selection, architecture, mvp-constraint
 
 ## Context
 
@@ -153,4 +153,14 @@ TABLE_ENDPOINT = "cmdb_ci"  # Base table with sys_class_name
 - Class selection considers both queryability (parent classes) and specificity (appropriate level)
 - Virtual appliance classes are explicitly rejected for physical hardware devices
 - Base `cmdb_ci` table provides fallback for endpoints (no standard endpoint class exists)
+
+## MVP Constraint
+
+**This is an MVP constraint** - the selected classes are fixed for the MVP release. Future versions may:
+- Support configuration of class mappings per device type
+- Add support for additional class hierarchies
+- Allow dynamic class selection based on device characteristics
+- Support custom class mappings via configuration
+
+For MVP, these class selections are hardcoded and represent the best-fit classes for UniFi Dream Machine integration.
 
