@@ -519,6 +519,36 @@ From `openflow-pr-update-pack/OpenFlow-Playground/agent_network_personalities.md
 3. **For Bug Fixes**: Run quality checks, use multi-agent analysis if available
 4. **Before Committing**: All quality checks must pass (no `--no-verify`)
 
+### Release Process
+
+**CRITICAL: NEVER ASK THE USER FOR VERSION/TAG INFORMATION**
+
+When working with releases:
+- **ALWAYS** read version from `pyproject.toml` (field: `project.version`)
+- **ALWAYS** construct tag as `v{version}` (e.g., `v0.3.0`)
+- **ALWAYS** extract release notes from `RELEASE_NOTES.md` for the version
+- **NEVER** ask "what version?" or "what tag?" - the information is in the codebase
+
+**Release Automation:**
+- Tag creation triggers pre-release validation workflow
+- Pre-release workflow automatically creates GitHub release
+- Publish workflow automatically publishes to PyPI
+- All version/tag information comes from `pyproject.toml` and `RELEASE_NOTES.md`
+
+**Example:**
+```bash
+# Extract version from pyproject.toml
+VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+TAG="v${VERSION}"
+# Use TAG for all release operations
+```
+
+**Do NOT:**
+- Ask user for version number
+- Ask user for tag name
+- Ask user to confirm version
+- Create tags with wrong version
+
 ### Common Tools & Patterns
 
 - **UV**: Use `uv` for Python environment management
@@ -593,6 +623,7 @@ When working on beast projects, ensure:
 - ✅ Secure credential management (1Password, not hardcoded)
 - ✅ Maintain documentation (update agent guidance when patterns change)
 - ✅ Apply principle-level thinking, not just step-by-step following
+- ✅ **NEVER ask for version/tag** - always read from `pyproject.toml` and construct tag as `v{version}`
 
 ## References
 
