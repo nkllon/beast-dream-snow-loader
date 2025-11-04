@@ -57,6 +57,9 @@ class TestStructuredFormatter:
         try:
             raise ValueError("Test exception")
         except ValueError:
+            import sys
+
+            exc_info = sys.exc_info()
             record = logging.LogRecord(
                 name="test.logger",
                 level=logging.ERROR,
@@ -64,7 +67,7 @@ class TestStructuredFormatter:
                 lineno=42,
                 msg="Error occurred",
                 args=(),
-                exc_info=True,
+                exc_info=exc_info,
             )
             record.funcName = "test_function"
             record.module = "test_module"

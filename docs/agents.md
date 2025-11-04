@@ -175,6 +175,13 @@ When debugging collaboratively (AI + Human), follow this methodology:
    - When unsure: Ask clarifying questions instead of making more changes
    - **Practical phrase to use**: "Didn't we already try this?" - A neutral, collaborative way to catch repetition AND check for potential hallucination (verify if we actually tried it or if agent is misremembering)
 
+7. **Systematic Issue Resolution** (from v0.2.0 release):
+   - **Fix Root Causes, Not Symptoms**: JSON serialization error → fix enum handling, not individual test cases
+   - **Batch Related Fixes**: When fixing test expectations, check all similar tests at once
+   - **Verify Tool Configurations**: Wrong SonarCloud action → check all workflow files for similar issues
+   - **Update Dependencies Proactively**: Add missing type stubs to prevent future MyPy issues
+   - **Test Fixes Incrementally**: Fix one category at a time (logger → metrics → config) to isolate issues
+
 **Example from Practice**:
 - Bug: Username field showing literal command string instead of value
 - Wrong approach: Assume kernel cache, browser state, old dereferencing bug, repeat fixes without verification
@@ -517,9 +524,10 @@ From `openflow-pr-update-pack/OpenFlow-Playground/agent_network_personalities.md
 - **UV**: Use `uv` for Python environment management
 - **1Password CLI**: For credential retrieval
 - **GitHub Actions**: For CI/CD
-- **SonarCloud**: For code quality
+- **SonarCloud**: For code quality (use `SonarSource/sonarcloud-github-action@master`, not SonarQube action)
 - **PyPI**: For package publishing
 - **Make**: For workflow automation
+- **Type Stubs**: Always include `types-requests`, `types-psutil` in dev dependencies for better analysis
 
 ### Error Handling & Logging
 
@@ -534,6 +542,44 @@ From `openflow-pr-update-pack/OpenFlow-Playground/agent_network_personalities.md
 - **Integration Tests**: Docker-based service testing
 - **Dependency Injection**: Protocols/interfaces for testability
 - **Quality Gates**: All checks must pass before commit
+
+### CI/CD & Code Quality Patterns
+
+**SonarCloud Integration**:
+- Use `SonarSource/sonarcloud-github-action@master` (NOT `sonarsource/sonarqube-scan-action`)
+- Configure proper coverage paths: `--cov=src/package_name --cov-report=xml:coverage.xml --cov-branch`
+- Include type stubs in CI: `types-requests`, `types-psutil` for better analysis
+- Update `sonar-project.properties` version to match actual project version
+
+**Ruff Configuration Migration**:
+- Move from top-level `[tool.ruff]` to `[tool.ruff.lint]` for select/ignore/per-file-ignores
+- Add test-specific ignores: `"tests/**" = ["B007", "B017"]` for loop variables and broad exceptions
+- Use `--fix` flag to auto-resolve fixable issues
+
+**JSON Serialization in Logging**:
+- Handle enum serialization with custom `json_serializer` function
+- Use `default=json_serializer` in `json.dumps()` to handle enums and other objects
+- Pattern: `if hasattr(obj, "value"): return obj.value` for enum handling
+
+**Test Data Accuracy**:
+- Verify test expectations match actual algorithm behavior
+- For percentile calculations: P95 of [1-100] = 96, P99 of [1-100] = 100
+- Don't assume test comments are correct - verify against implementation
+
+**Exception Handling in Tests**:
+- When testing `exc_info=True`, pass actual `sys.exc_info()` tuple, not boolean
+- Pattern: `exc_info = sys.exc_info()` in except block, then pass to LogRecord
+- Avoid `exc_info=True` in LogRecord constructor - it doesn't auto-populate
+
+**Type Safety & MyPy**:
+- Install type stubs early: `types-requests`, `types-psutil`, etc.
+- Fix type annotations systematically, don't ignore with `# type: ignore`
+- Use proper union types and optional handling
+
+**Pydantic Migration**:
+- Migrate from V1 `@validator` to V2 `@field_validator`
+- Replace class-based `Config` with `ConfigDict`
+- Update validation patterns for V2 compatibility
 
 ## Agent Guidance Checklist
 
@@ -564,8 +610,9 @@ When working on beast projects, ensure:
 
 **For AI Agents**: This document provides principle-level guidance. Read project-specific `AGENTS.md` files for detailed requirements. Apply beast principles through context and inference.
 
-**Last Updated**: 2025-11-03  
+**Last Updated**: 2025-11-04  
 **Status**: Active Development  
 **Agent Role Accepted**: 2025-11-03
 
-**Credential Management Update**: 2025-11-03 - Established 1Password as canonical source, GitHub secrets as projections
+**Credential Management Update**: 2025-11-03 - Established 1Password as canonical source, GitHub secrets as projections  
+**CI/CD Quality Update**: 2025-11-04 - Added SonarCloud workflow fixes and code quality lessons

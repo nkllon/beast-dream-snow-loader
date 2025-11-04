@@ -75,12 +75,15 @@ ServiceNow CMDB Tables
 - **Table Creation:** Use ServiceNow Table API
 - **Data Loading:** Use Import Set API or direct REST API
 - **Error Handling:** Retry logic, validation, rollback
+- **Logging:** Structured logging with enum serialization support
+- **Operational Resilience:** Circuit breakers, retry policies, health checks, metrics collection
 
 ## Quality Standards
 
-- **Type Safety:** All functions typed, MyPy strict mode
-- **Code Style:** Black formatting, Ruff linting
-- **Testing:** pytest with unit and integration tests
+- **Type Safety:** All functions typed, MyPy strict mode, include type stubs (`types-requests`, `types-psutil`)
+- **Code Style:** Black formatting, Ruff linting (use `[tool.ruff.lint]` configuration)
+- **Testing:** pytest with unit and integration tests, verify test expectations match implementation
 - **Documentation:** Docstrings for all public APIs
 - **OSS:** MIT License, PyPI publishing, SonarCloud quality
+- **CI/CD:** Use `SonarSource/sonarcloud-github-action@master`, proper coverage configuration, systematic issue resolution
 

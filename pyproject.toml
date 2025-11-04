@@ -52,6 +52,8 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.21.0",
+    "types-requests>=2.31.0",
+    "types-psutil>=5.9.0",
 ]
 
 [project.urls]
@@ -69,6 +71,8 @@ include = '\.pyi?$'
 [tool.ruff]
 target-version = "py310"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -81,10 +85,12 @@ select = [
 ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
+    "B017",  # pytest.raises(Exception) is too broad
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/**" = ["B007"]  # Allow unused loop variables in tests
 
 [tool.mypy]
 python_version = "3.10"

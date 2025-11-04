@@ -225,7 +225,9 @@ class ConfigurationManager:
                 self.logger.info(
                     f"Detected environment: {best_env.value}",
                     environment=best_env.value,
-                    detection_scores=scores,
+                    detection_scores={
+                        env.value: score for env, score in scores.items()
+                    },
                     environment_detection=True,
                 )
                 return best_env

@@ -26,8 +26,16 @@ class StructuredFormatter(logging.Formatter):
         }
 
         # Add exception info if present
-        if record.exc_info and record.exc_info is not True:
-            log_data["exception"] = self.formatException(record.exc_info)
+        if record.exc_info:
+            if record.exc_info is True:
+                # Get current exception info
+                import sys
+
+                exc_info = sys.exc_info()
+                if exc_info[0] is not None:
+                    log_data["exception"] = self.formatException(exc_info)
+            else:
+                log_data["exception"] = self.formatException(record.exc_info)
 
         # Add extra fields from record
         for key, value in record.__dict__.items():
@@ -60,7 +68,13 @@ class StructuredFormatter(logging.Formatter):
                 else:
                     log_data[key] = value
 
-        return json.dumps(log_data, default=str, separators=(",", ":"))
+        # Convert any remaining enum values to strings for JSON serialization
+        def json_serializer(obj):
+            if hasattr(obj, "value"):  # Handle enums
+                return obj.value
+            return str(obj)
+
+        return json.dumps(log_data, default=json_serializer, separators=(",", ":"))
 
 
 class StructuredLogger:

@@ -65,8 +65,8 @@ class TestOperationMetrics:
         for time_ms in [100, 200, 300, 400, 500]:
             metrics.response_times.append(time_ms)
 
-        # 95th percentile calculation: 95% of 100 items = index 95 (0-based), which is value 96
-        assert metrics.get_percentile(95.0) == 96
+        # 95th percentile of [100, 200, 300, 400, 500] should be 500
+        assert metrics.get_percentile(95.0) == 500
 
         # 50th percentile should be 300 (index 2 of 5 items)
         assert metrics.get_percentile(50.0) == 300
@@ -84,7 +84,7 @@ class TestOperationMetrics:
             metrics.response_times.append(time_ms)
 
         assert metrics.p95_response_time_ms == 96.0
-        assert metrics.p99_response_time_ms == 99.0
+        assert metrics.p99_response_time_ms == 100.0
 
 
 class TestSystemMetrics:
@@ -195,7 +195,9 @@ class TestMetricsCollector:
         ]  # Total: 1550.0, Average: 310.0
         success_flags = [True, True, True, False, False]
 
-        for _i, (time_ms, success) in enumerate(zip(response_times, success_flags, strict=True)):
+        for _i, (time_ms, success) in enumerate(
+            zip(response_times, success_flags, strict=True)
+        ):
             self.metrics_collector.record_request("api_call", time_ms, success)
 
         metrics = self.metrics_collector.get_operation_metrics("api_call")

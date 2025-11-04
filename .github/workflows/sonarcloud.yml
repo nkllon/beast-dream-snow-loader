@@ -27,15 +27,15 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras
-          # Ensure dev dependencies are available
-          uv pip install -e ".[dev]"
+          # Install type stubs for better analysis
+          uv pip install types-requests types-psutil
 
       - name: Run tests with coverage
         run: |
-          uv run pytest tests/ --cov=src --cov-report=xml --cov-report=html
+          uv run pytest tests/ --cov=src/beast_dream_snow_loader --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-branch
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@v5.0.0
+        uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
