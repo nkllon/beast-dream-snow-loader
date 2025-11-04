@@ -20,7 +20,7 @@ beast-dream-snow-loader transforms and loads UniFi network data (hosts, sites, d
    - UniFi devices → ServiceNow network device CIs
    - UniFi clients → ServiceNow endpoints
 2. **Loads Data:** Syncs transformed data to ServiceNow CMDB via REST API
-   - Two-phase relationship linking
+   - Multi-phase batch relationship linking
    - Batch loading with dependency resolution
    - Supports specific CI type tables or base `cmdb_ci` table fallback
 

@@ -149,21 +149,21 @@
 
 ---
 
-### 7. Relationship Linking: Two-Phase ✅
+### 7. Relationship Linking: Multi-Phase Batch Processing ✅
 
-**Assumption:** We link relationships in two phases:
+**Assumption:** We link relationships using multi-phase batch processing:
 1. **Phase 1:** Create all records (without relationships), capture returned `sys_id`s
 2. **Phase 2:** Update records with relationship references using captured `sys_id`s
 
 **Rationale:** ServiceNow requires `sys_id` for relationships. Cannot use source IDs. REST API doesn't support transactional/batch operations.
 
-**Current Implementation:** REST API with two-phase approach (implemented and tested).
+**Current Implementation:** REST API with multi-phase batch processing approach (implemented and tested).
 
 **Alternative Approaches (To Investigate):**
 - **GraphQL API**: May support batch mutations and transactional semantics (single-phase approach)
   - ServiceNow GraphQL API available since Quebec release
   - Need to verify: batch mutations, transactional semantics, inline relationship references
-  - If supported, could eliminate two-phase complexity
+  - If supported, could eliminate multi-phase batch processing complexity
   - Investigation needed before switching
 - **Change Management**: Standard/Regular Changes could track entire batch operation
 - **Import Sets**: Could use Import Sets with transform maps (different approach)
@@ -215,7 +215,7 @@
 **Implementation:**
 - Store mapping: `{unifi_source_id: servicenow_sys_id}`
 - Use `sys_id` values for all relationship fields
-- Two-phase approach: create records → link relationships
+- Multi-phase batch processing: create records → link relationships
 
 **Can Violate:** No - this is a ServiceNow platform constraint.
 
@@ -276,11 +276,11 @@ When modifying constraints/assumptions:
 - Dynamic GraphQL schema generation from table definitions
 
 **Impact:**
-- Could eliminate two-phase relationship linking
+- Could eliminate multi-phase batch relationship linking
 - Single GraphQL mutation could create all records and set relationships
 - May require ServiceNow GraphQL API client implementation
 
-**Current Status:** Using REST API (two-phase approach). GraphQL could be future enhancement.
+**Current Status:** Using REST API (multi-phase batch processing approach). GraphQL could be future enhancement.
 
 ---
 

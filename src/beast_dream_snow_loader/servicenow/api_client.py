@@ -3,6 +3,8 @@
 import os
 import shutil
 import subprocess
+import time
+from collections.abc import Callable
 from typing import Any
 
 import requests  # type: ignore
@@ -14,6 +16,171 @@ import requests  # type: ignore
 # Code detects available services (1Password CLI, etc.) and uses them if present.
 # Code gracefully degrades when beast services aren't available (OSS user case).
 # Code reads from os.getenv() which automatically uses the executing user's system environment.
+
+
+def _is_instance_hibernating(response: requests.Response) -> bool:
+    """Check if ServiceNow instance is hibernating based on response.
+
+    Args:
+        response: HTTP response from ServiceNow API
+
+    Returns:
+        True if instance appears to be hibernating, False otherwise
+    """
+    if response.status_code != 200:
+        return False
+
+    content_type = response.headers.get("Content-Type", "").lower()
+    if "application/json" in content_type:
+        return False
+
+    # Check for hibernation indicators in HTML response
+    if "text/html" in content_type:
+        text_lower = response.text.lower()
+        hibernation_indicators = [
+            "instance hibernating",
+            "instance hibernating page",
+            "hibernating",
+            "dev.do#!/home?wu=true",  # Wake-up redirect
+        ]
+        return any(indicator in text_lower for indicator in hibernation_indicators)
+
+    return False
+
+
+def _wait_with_pacifier(
+    message: str,
+    delay_seconds: float,
+    max_dots: int = 3,
+) -> None:
+    """Display a cute pacifier while waiting.
+
+    Uses Streamlit spinner if we're in a Streamlit app context (checks env vars first),
+    otherwise falls back to terminal dots. No Streamlit import unless we're actually in Streamlit!
+
+    Args:
+        message: Message to display
+        delay_seconds: How long to wait
+        max_dots: Maximum number of dots in the animation (terminal only)
+    """
+    # Check if we're in Streamlit context BEFORE importing (avoids initialization warnings)
+    # Streamlit sets these env vars when running via `streamlit run`
+    if os.getenv("STREAMLIT_SERVER_PORT") or os.getenv("STREAMLIT_SERVER_ADDRESS"):
+        try:
+            import streamlit as st
+
+            # Verify we can actually use Streamlit (double-check context)
+            try:
+                _ = st.session_state
+                # We're in Streamlit - use the spinner widget!
+                with st.spinner(f"😴 {message}"):
+                    time.sleep(delay_seconds)
+                return
+            except (AttributeError, RuntimeError):
+                # Streamlit imported but not in usable context, fall through to terminal
+                pass
+        except ImportError:
+            # Streamlit not installed, fall through to terminal
+            pass
+
+    # Terminal fallback: clean single-line animation with progress
+    dot_interval = 0.5  # Update every 0.5 seconds
+    elapsed = 0.0
+    spinner_frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    start_time = time.time()
+
+    while elapsed < delay_seconds:
+        remaining = max(0, delay_seconds - elapsed)
+        spinner = spinner_frames[int(elapsed * 2) % len(spinner_frames)]
+        dots = "." * ((int(elapsed * 2) % max_dots) + 1)
+
+        # Single clean line: spinner, message, dots, remaining time
+        # Use \r to return to start of line, then pad with spaces to clear old content
+        line = f"{spinner} {message}{dots} ({remaining:.1f}s)"
+        print(f"\r{line:<79}", end="", flush=True)
+
+        time.sleep(min(dot_interval, delay_seconds - elapsed))
+        elapsed = time.time() - start_time
+
+    # Clear the line when done (move to start, clear to end, move to start again)
+    print("\r\033[K", end="", flush=True)
+
+
+def _execute_with_hibernation_retry(
+    operation: Callable[[], requests.Response],
+    operation_name: str = "API call",
+    max_attempts: int = 8,
+    base_delay_seconds: float = 2.0,
+    max_delay_seconds: float = 60.0,
+    exponential_base: float = 1.5,
+) -> requests.Response:
+    """Execute an API operation with hibernation detection and exponential backoff.
+
+    If the instance is hibernating, retries with exponential backoff and a cute pacifier.
+
+    Args:
+        operation: Function that returns a requests.Response
+        operation_name: Name of the operation for logging
+        max_attempts: Maximum number of retry attempts
+        base_delay_seconds: Initial delay between retries
+        max_delay_seconds: Maximum delay between retries
+        exponential_base: Base for exponential backoff calculation
+
+    Returns:
+        Response from successful API call
+
+    Raises:
+        requests.HTTPError: If instance doesn't wake up after max_attempts
+    """
+    last_response = None
+
+    for attempt in range(1, max_attempts + 1):
+        response = operation()
+
+        # Check if instance is hibernating
+        if not _is_instance_hibernating(response):
+            # Success! Instance is awake
+            if attempt > 1:
+                print(f"✓ Instance woke up after {attempt} attempt(s)")
+            return response
+
+        # Instance is hibernating
+        last_response = response
+
+        if attempt == max_attempts:
+            # Last attempt - give up
+            print(
+                f"\n❌ Instance still hibernating after {max_attempts} attempts.\n"
+                f"   Please log in via web UI to wake it up:\n"
+                f"   https://{response.url.split('/')[2] if hasattr(response, 'url') else 'your-instance.service-now.com'}\n"
+            )
+            raise requests.HTTPError(
+                f"ServiceNow instance is hibernating. "
+                f"Please log in via web UI to wake it up. "
+                f"Attempted {max_attempts} times."
+            )
+
+        # Calculate exponential backoff delay
+        delay = min(
+            base_delay_seconds * (exponential_base ** (attempt - 1)),
+            max_delay_seconds,
+        )
+
+        # Show cute pacifier with progress info
+        instance_url = (
+            response.url.split("/")[2]
+            if hasattr(response, "url") and response.url
+            else "instance"
+        )
+        _wait_with_pacifier(
+            f"😴 {instance_url} hibernating [attempt {attempt}/{max_attempts}]",
+            delay,
+        )
+
+    # Should never reach here, but just in case
+    if last_response:
+        raise requests.HTTPError("Failed to wake up ServiceNow instance")
+    raise RuntimeError("No response received")
 
 
 def _is_1password_available() -> bool:
@@ -323,7 +490,13 @@ class ServiceNowAPIClient:
             requests.HTTPError: If API request fails
         """
         url = f"{self.base_url}/table/{table}"
-        response = self.session.post(url, json=data)
+
+        def _create() -> requests.Response:
+            return self.session.post(url, json=data)
+
+        response = _execute_with_hibernation_retry(
+            _create, operation_name=f"create_record({table})"
+        )
         if response.status_code == 401:
             # Provide more detail on auth failure
             error_detail = response.text
@@ -367,7 +540,13 @@ class ServiceNowAPIClient:
             requests.HTTPError: If API request fails
         """
         url = f"{self.base_url}/table/{table}/{sys_id}"
-        response = self.session.get(url)
+
+        def _get() -> requests.Response:
+            return self.session.get(url)
+
+        response = _execute_with_hibernation_retry(
+            _get, operation_name=f"get_record({table})"
+        )
         if response.status_code == 404:
             return None
         response.raise_for_status()
@@ -390,7 +569,13 @@ class ServiceNowAPIClient:
             requests.HTTPError: If API request fails
         """
         url = f"{self.base_url}/table/{table}/{sys_id}"
-        response = self.session.put(url, json=data)
+
+        def _update() -> requests.Response:
+            return self.session.put(url, json=data)
+
+        response = _execute_with_hibernation_retry(
+            _update, operation_name=f"update_record({table})"
+        )
         response.raise_for_status()
         return response.json().get("result", {})  # type: ignore
 
@@ -415,7 +600,12 @@ class ServiceNowAPIClient:
         if query:
             params["sysparm_query"] = query
 
-        response = self.session.get(url, params=params)
+        def _query() -> requests.Response:
+            return self.session.get(url, params=params)
+
+        response = _execute_with_hibernation_retry(
+            _query, operation_name=f"query_records({table})"
+        )
         response.raise_for_status()
         return response.json().get("result", [])  # type: ignore
 

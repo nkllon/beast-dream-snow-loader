@@ -203,8 +203,9 @@ class TestTransformSite:
     def test_transform_site_preserves_relationships(self):
         """Test that site-to-host relationships are preserved.
 
-        Note: Relationships are handled in Phase 2 (two-phase linking).
-        During transformation, relationships are NOT set (they require sys_id references).
+        Note: Relationships are handled in Phase 2 (multi-phase batch linking).
+        During transformation, relationship source IDs ARE set (as UniFi IDs).
+        These will be converted to sys_ids in Phase 2.
         """
         unifi_site = UniFiSite(
             siteId="test-site-id",
@@ -240,9 +241,9 @@ class TestTransformSite:
 
         result = transform_site(unifi_site)
 
-        # Relationships handled in Phase 2 (after records created and sys_ids captured)
-        # During transformation, host_id is None (will be set in linking phase)
-        assert result.host_id is None
+        # Relationship source IDs ARE set during transformation (as UniFi IDs)
+        # These will be converted to sys_ids in Phase 2
+        assert result.host_id == "test-host-id"
 
     def test_transform_site_validates_output(self):
         """Test that output validates against ServiceNow model."""
@@ -370,8 +371,9 @@ class TestTransformClient:
     def test_transform_client_preserves_relationships(self):
         """Test that client-to-site/device relationships are preserved.
 
-        Note: Relationships are handled in Phase 2 (two-phase linking).
-        During transformation, relationships are NOT set (they require sys_id references).
+        Note: Relationships are handled in Phase 2 (multi-phase batch linking).
+        During transformation, relationship source IDs ARE set (as UniFi IDs).
+        These will be converted to sys_ids in Phase 2.
         """
         unifi_client = UniFiClient(
             hostname="test-client",
@@ -383,10 +385,12 @@ class TestTransformClient:
 
         result = transform_client(unifi_client)
 
-        # Relationships handled in Phase 2 (after records created and sys_ids captured)
-        # During transformation, relationships are None (will be set in linking phase)
-        assert result.site_id is None
-        assert result.device_id is None
+        # Relationship source IDs ARE set during transformation (as UniFi IDs)
+        # site_id should be set (UniFiClient has siteId)
+        # device_id may not be set (UniFiClient doesn't have deviceId field)
+        assert result.site_id == "test-site-id"
+        # Note: device_id is not set because UniFiClient doesn't have deviceId field
+        # It would need to be derived from context or passed separately
 
     def test_transform_client_validates_output(self):
         """Test that output validates against ServiceNow model."""

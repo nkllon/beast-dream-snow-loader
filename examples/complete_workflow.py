@@ -139,15 +139,15 @@ def main():
 
         # Step 2: Load sample UniFi data
         print("\n2. Loading UniFi data...")
-        host, site, device, client_data = create_sample_unifi_data()
-        print("   ✓ Loaded: 1 host, 1 site, 1 device, 1 client")
+        hosts, sites, devices, clients = create_sample_unifi_data()
+        print(f"   ✓ Loaded: {len(hosts)} host(s), {len(sites)} site(s), {len(devices)} device(s), {len(clients)} client(s)")
 
         # Step 3: Transform to ServiceNow models
         print("\n3. Transforming UniFi data to ServiceNow models...")
-        gateway_ci = transform_host(host)
-        location = transform_site(site)
-        network_device = transform_device(device)
-        endpoint = transform_client(client_data)
+        gateway_cis = [transform_host(host) for host in hosts]
+        locations = [transform_site(site) for site in sites]
+        network_devices = [transform_device(device) for device in devices]
+        endpoints = [transform_client(client_data) for client_data in clients]
         print("   ✓ Transformation complete")
 
         # Step 4: Load into ServiceNow with relationships
@@ -156,10 +156,10 @@ def main():
 
         id_mapping = load_entities_with_relationships(
             client,
-            gateways=[gateway_ci],
-            locations=[location],
-            devices=[network_device],
-            endpoints=[endpoint],
+            gateways=gateway_cis,
+            locations=locations,
+            devices=network_devices,
+            endpoints=endpoints,
         )
 
         # Step 5: Display results

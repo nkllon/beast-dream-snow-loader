@@ -57,7 +57,7 @@ class ServiceNowGatewayCI(BaseModel):
 - Extract ALL nested fields, not just mapped ones
 - Preserve timestamps: `u_unifi_registration_time`, etc.
 
-### Fix 3: Two-Phase Relationship Linking
+### Fix 3: Multi-Phase Batch Relationship Linking
 
 **Phase 1: Create Records**
 - Create all records, capture returned `sys_id`s
@@ -92,7 +92,7 @@ class ServiceNowGatewayCI(BaseModel):
    - Store raw UniFi data
    - Extract all nested fields
 
-3. **Implement two-phase relationship linking** (Critical)
+3. **Implement multi-phase batch relationship linking** (Critical)
    - Create records first, capture sys_ids
    - Update relationships second
 

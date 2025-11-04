@@ -94,9 +94,10 @@ def transform_site(unifi_site: UniFiSite) -> ServiceNowLocation:
     if "timezone" not in mapped_data and unifi_site.meta:
         mapped_data["timezone"] = unifi_site.meta.timezone
 
-    # Relationships (host_id, site_id, device_id) are handled in Phase 2 of two-phase linking
-    # Do NOT set relationship fields during transformation - they will be None until Phase 2
-    # The loader will set these using sys_ids after all records are created
+    # Set relationship source IDs (will be converted to sys_ids in Phase 2)
+    # host_id is the source ID (UniFi hostId) - loader will map to sys_id
+    if unifi_site.hostId:
+        mapped_data["host_id"] = unifi_site.hostId
 
     # Preserve raw source data for audit/reconciliation
     if "u_unifi_raw_data" not in mapped_data:
@@ -138,9 +139,11 @@ def transform_device(unifi_device: UniFiDevice) -> ServiceNowNetworkDeviceCI:
             # Required field - use placeholder if not available
             mapped_data["mac_address"] = "unknown"
 
-    # Relationships (host_id, site_id, device_id) are handled in Phase 2 of two-phase linking
-    # Do NOT set relationship fields during transformation - they will be None until Phase 2
-    # The loader will set these using sys_ids after all records are created
+    # Set relationship source IDs (will be converted to sys_ids in Phase 2)
+    # host_id and site_id are source IDs - loader will map to sys_ids
+    if unifi_device.hostId:
+        mapped_data["host_id"] = unifi_device.hostId
+    # Note: UniFiDevice doesn't have siteId - would need to be passed separately or derived
 
     # Preserve raw source data for audit/reconciliation
     if "u_unifi_raw_data" not in mapped_data:
@@ -179,9 +182,11 @@ def transform_client(unifi_client: UniFiClient) -> ServiceNowEndpoint:
     if "mac_address" not in mapped_data:
         mapped_data["mac_address"] = unifi_client.mac
 
-    # Relationships (host_id, site_id, device_id) are handled in Phase 2 of two-phase linking
-    # Do NOT set relationship fields during transformation - they will be None until Phase 2
-    # The loader will set these using sys_ids after all records are created
+    # Set relationship source IDs (will be converted to sys_ids in Phase 2)
+    # site_id is the source ID (UniFi siteId) - loader will map to sys_id
+    if unifi_client.siteId:
+        mapped_data["site_id"] = unifi_client.siteId
+    # Note: UniFiClient doesn't have deviceId - would need to be passed separately or derived
 
     # Preserve raw source data for audit/reconciliation
     if "u_unifi_raw_data" not in mapped_data:

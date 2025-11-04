@@ -22,7 +22,7 @@
    - UniFi → ServiceNow field mapping
    - Nested field flattening
    - Source data preservation (`u_unifi_raw_data`)
-   - Two-phase relationship linking
+   - Multi-phase batch relationship linking
 
 4. **ServiceNow API Client** ✅
    - REST API client with authentication
@@ -33,7 +33,7 @@
 
 5. **Data Loading** ✅
    - Individual entity loading functions
-   - Two-phase relationship linking
+   - Multi-phase batch relationship linking
    - Batch loading with dependency resolution
    - Changeset support (detection and association)
 

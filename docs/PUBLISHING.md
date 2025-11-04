@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Version:** `0.2.3` (Stable Release)
+**Version:** `0.3.0` (Stable Release)
 
 **Release Cadence:** Monthly stable releases with on-demand patch follow-ups to deliver fixes without waiting for the next feature drop.
 
@@ -23,8 +23,8 @@
 
 1. **Create GitHub Release:**
    - Go to GitHub repository → Releases → "Draft a new release"
-   - Tag: `v0.2.3` (must match version in `pyproject.toml`)
-   - Title: `v0.2.3 - Stable Release`
+   - Tag: `v0.3.0` (must match version in `pyproject.toml`)
+   - Title: `v0.3.0 - Documentation and Requirements Maturity`
    - Description: Copy from [RELEASE_NOTES.md](../RELEASE_NOTES.md)
    - Click "Publish release"
 
@@ -38,7 +38,7 @@
 1. **Trigger Workflow:**
    - Go to GitHub Actions → "Publish to PyPI" workflow
    - Click "Run workflow"
-   - Enter version: `0.2.3`
+   - Enter version: `0.3.0`
    - Click "Run workflow"
 
 ### Verification
@@ -47,7 +47,7 @@ After publishing, verify:
 
 1. **Check PyPI Page:**
    - Visit https://pypi.org/project/beast-dream-snow-loader/
-   - Should show version `0.2.3`
+   - Should show version `0.3.0`
    - Development status should list the stable classifier
 
 2. **Test Installation:**
@@ -56,7 +56,7 @@ After publishing, verify:
 
    # Verify version
    python -c "import beast_dream_snow_loader; print(beast_dream_snow_loader.__version__)"
-   # Should output: 0.2.3
+   # Should output: 0.3.0
 ```
 
 3. **Default Installation Works:**
@@ -64,7 +64,7 @@ After publishing, verify:
 # This installs the latest published stable build
 pip install beast-dream-snow-loader
 python -c "import beast_dream_snow_loader; print(beast_dream_snow_loader.__version__)"
-# Should output: 0.2.3
+# Should output: 0.3.0
 ```
 
 ## SonarCloud Setup
@@ -115,9 +115,9 @@ After setup:
 **Format:** `MAJOR.MINOR.PATCH`
 
 Examples:
-- `0.2.3` - Current stable release
-- `0.2.4` - Next patch release (bug fixes, documentation updates)
-- `0.3.0` - Next feature release (new capabilities, breaking changes if required)
+- `0.3.0` - Current stable release
+- `0.3.1` - Next patch release (bug fixes, documentation updates)
+- `0.4.0` - Next feature release (new capabilities, breaking changes if required)
 
 **Stability Expectations:**
 - Stable releases install with the standard `pip install` command
@@ -128,28 +128,28 @@ Examples:
 
 1. **Update `pyproject.toml`:**
    ```toml
-   version = "0.2.4"  # Next patch release
+   version = "0.3.1"  # Next patch release
    ```
 
 2. **Update `src/beast_dream_snow_loader/__init__.py`:**
    ```python
-   __version__ = "0.2.4"
+   __version__ = "0.3.1"
    ```
 
 3. **Update `sonar-project.properties`:**
    ```properties
-   sonar.projectVersion=0.2.4
+   sonar.projectVersion=0.3.1
    ```
 
 4. **Commit and push:**
    ```bash
    git add -A
-    git commit -m "chore: bump version to 0.2.4"
+    git commit -m "chore: bump version to 0.3.1"
    git push
    ```
 
 5. **Create GitHub Release:**
-   - Tag: `v0.2.4`
+   - Tag: `v0.3.1`
    - Publish
 
 ## Testing GitHub Workflows
@@ -198,7 +198,7 @@ Examples:
 ### PyPI Publishing Issues
 
 **"Package already exists":**
-- Increment version number (e.g., `0.2.3` → `0.2.4`)
+- Increment version number (e.g., `0.3.0` → `0.3.1`)
 - Update version in `pyproject.toml` and `__init__.py`
 
 **"403 Forbidden":**

@@ -7,8 +7,11 @@ Usage:
     export SERVICENOW_USERNAME="admin"
     export SERVICENOW_PASSWORD="your-password"
 
-    # Run smoke test
+    # Run smoke test (CLI - uses terminal dots)
     python examples/smoke_test.py
+    
+    # Or run as Streamlit app (uses Streamlit spinner widgets!)
+    streamlit run examples/smoke_test.py
 """
 
 import sys
@@ -56,8 +59,9 @@ def main():
             )
             result = load_gateway_ci(client, test_gateway)
         except Exception as e:
-            if "Invalid table" in str(e):
-                print("   ⚠️  Specific table not available, using base cmdb_ci table...")
+            # Fallback to base cmdb_ci table if specific table doesn't exist or access denied
+            if "Invalid table" in str(e) or "403" in str(e) or "Forbidden" in str(e):
+                print("   ⚠️  Specific table not available or access denied, using base cmdb_ci table...")
                 # Fallback to base cmdb_ci table
                 result = client.create_record("cmdb_ci", test_data)
             else:

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Version:** `0.2.3` (Stable Release)
+**Version:** `0.3.0` (Stable Release)
 
 **Workflows Ready:**
 - ✅ CI workflow (runs on push/PR)
@@ -54,14 +54,14 @@
 **To Test (Dry Run):**
 1. Go to GitHub → Actions → "Publish to PyPI"
 2. Click "Run workflow"
-3. Enter version: `0.2.3`
+3. Enter version: `0.3.0`
 4. Click "Run workflow"
 5. Watch it run (should stop before actually publishing if not a release)
 
 **To Test (Actual Release):**
 1. Create GitHub release:
-   - Tag: `v0.2.3`
-   - Title: `v0.2.3 - Stable Release`
+   - Tag: `v0.3.0`
+   - Title: `v0.3.0 - Documentation and Requirements Maturity`
    - Publish
 2. Workflow will automatically run and publish to PyPI
 

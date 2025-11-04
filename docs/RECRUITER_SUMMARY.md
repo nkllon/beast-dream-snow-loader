@@ -3,7 +3,7 @@
 ## Project: beast-dream-snow-loader
 
 **GitHub:** https://github.com/nkllon/beast-dream-snow-loader  
-**PyPI:** https://pypi.org/project/beast-dream-snow-loader/ (Beta pre-release)  
+**PyPI:** https://pypi.org/project/beast-dream-snow-loader/ (Stable Release)  
 **Timeline:** Complete MVP in single development session (~5 hours from repo init to publishable)
 
 ## What It Does
@@ -32,7 +32,7 @@ Transforms and loads UniFi network infrastructure data (gateways, sites, devices
 **ServiceNow Integration:**
 - REST API client with multiple authentication methods
 - Flexible table support (specific CI types or base table fallback)
-- Two-phase relationship linking
+- Multi-phase batch relationship linking
 - Batch operations with dependency resolution
 - Graceful degradation (works with or without plugins)
 
@@ -42,7 +42,7 @@ Transforms and loads UniFi network infrastructure data (gateways, sites, devices
    - Nested field flattening (UniFi nested JSON → ServiceNow flat schema)
    - Field mapping with configuration
    - Source data preservation (raw data stored for audit)
-   - Relationship preservation (two-phase linking)
+   - Relationship preservation (multi-phase batch linking)
 
 2. **ServiceNow API Client:**
    - Multiple auth methods: API key (preferred), OAuth, Basic Auth
@@ -96,7 +96,7 @@ Transforms and loads UniFi network infrastructure data (gateways, sites, devices
 
 ### DevOps
 - ✅ GitHub Actions CI/CD workflows
-- ✅ PyPI publishing setup (beta pre-release)
+- ✅ PyPI publishing setup (stable release)
 - ✅ SonarCloud integration
 - ✅ Automated testing and quality checks
 

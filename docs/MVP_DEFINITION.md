@@ -29,7 +29,7 @@
 - REST API client with authentication (API key, OAuth, Basic Auth)
 - Table existence checking
 - Record CRUD operations (create, read, update, query)
-- Two-phase relationship linking
+- Multi-phase batch relationship linking
 - Batch loading with dependency resolution
 
 **Data Quality:**

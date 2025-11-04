@@ -1,7 +1,5 @@
 """Data loading functions for ServiceNow CMDB."""
 
-from typing import Any
-
 from beast_dream_snow_loader.models.servicenow import (
     ServiceNowEndpoint,
     ServiceNowGatewayCI,
@@ -10,16 +8,15 @@ from beast_dream_snow_loader.models.servicenow import (
 )
 from beast_dream_snow_loader.servicenow.api_client import ServiceNowAPIClient
 
-# Table name mappings (ServiceNow standard tables or custom)
-# Note: Using actual available classes from CMDB CI Class Models plugin
-TABLE_GATEWAY_CI = "cmdb_ci_netgear"  # Network Gear (physical hardware - UniFi Dream Machine is a physical device)
-# Alternative: "cmdb_ci_network_node" (subclass of netgear, also valid for network devices)
-TABLE_LOCATION = "cmdb_ci_site"  # Site/Location (cmdb_location doesn't exist)
+# Table name mappings (ServiceNow standard tables)
+# Per ADR-0001: docs/adr/0001-servicenow-ci-class-selection.md
+TABLE_GATEWAY_CI = "cmdb_ci_netgear"  # Physical network hardware (has table)
+TABLE_LOCATION = "cmdb_ci_site"  # Site/location class (use cmdb_ci with sys_class_name)
 TABLE_NETWORK_DEVICE_CI = (
-    "cmdb_ci_network_node"  # Network Node (subclass of cmdb_ci_netgear)
+    "cmdb_ci_network_node"  # Network node class (use cmdb_ci with sys_class_name)
 )
 TABLE_ENDPOINT = (
-    "cmdb_ci"  # Use base table with sys_class_name (cmdb_endpoint doesn't exist)
+    "cmdb_ci"  # Base table with sys_class_name (cmdb_endpoint doesn't exist)
 )
 
 
@@ -27,6 +24,7 @@ def load_gateway_ci(client: ServiceNowAPIClient, gateway: ServiceNowGatewayCI) -
     """Load a gateway CI record into ServiceNow.
 
     Note: sys_id is excluded from create (ServiceNow auto-generates).
+    Falls back to base cmdb_ci table if specific table doesn't exist.
     See docs/servicenow_constraints.md for assumptions.
 
     Args:
@@ -39,14 +37,22 @@ def load_gateway_ci(client: ServiceNowAPIClient, gateway: ServiceNowGatewayCI) -
     data = gateway.model_dump(exclude_none=True)
     # Remove sys_id if present (ServiceNow auto-generates)
     data.pop("sys_id", None)
-    return client.create_record(TABLE_GATEWAY_CI, data)
+
+    try:
+        return client.create_record(TABLE_GATEWAY_CI, data)
+    except Exception as e:
+        # Fallback to base cmdb_ci table if specific table doesn't exist
+        if "Invalid table" in str(e) or "403" in str(e) or "400" in str(e):
+            data["sys_class_name"] = TABLE_GATEWAY_CI
+            return client.create_record(TABLE_ENDPOINT, data)
+        raise
 
 
 def load_location(client: ServiceNowAPIClient, location: ServiceNowLocation) -> dict:
     """Load a location record into ServiceNow.
 
-    Note: sys_id is excluded from create (ServiceNow auto-generates).
-    See docs/servicenow_constraints.md for assumptions.
+    Per ADR-0001: Uses cmdb_ci_site class via cmdb_ci table with sys_class_name.
+    cmdb_ci_site is a class, not a table - must use base cmdb_ci with sys_class_name.
 
     Args:
         client: ServiceNow API client
@@ -58,7 +64,10 @@ def load_location(client: ServiceNowAPIClient, location: ServiceNowLocation) -> 
     data = location.model_dump(exclude_none=True)
     # Remove sys_id if present (ServiceNow auto-generates)
     data.pop("sys_id", None)
-    return client.create_record(TABLE_LOCATION, data)
+    # cmdb_ci_site is a class, not a table - use base cmdb_ci with sys_class_name
+    # Per ADR-0001: docs/adr/0001-servicenow-ci-class-selection.md
+    data["sys_class_name"] = TABLE_LOCATION
+    return client.create_record(TABLE_ENDPOINT, data)
 
 
 def load_network_device_ci(
@@ -66,8 +75,8 @@ def load_network_device_ci(
 ) -> dict:
     """Load a network device CI record into ServiceNow.
 
-    Note: sys_id is excluded from create (ServiceNow auto-generates).
-    See docs/servicenow_constraints.md for assumptions.
+    Per ADR-0001: Uses cmdb_ci_network_node class via cmdb_ci table with sys_class_name.
+    cmdb_ci_network_node is a class, not a table - must use base cmdb_ci with sys_class_name.
 
     Args:
         client: ServiceNow API client
@@ -79,7 +88,10 @@ def load_network_device_ci(
     data = device.model_dump(exclude_none=True)
     # Remove sys_id if present (ServiceNow auto-generates)
     data.pop("sys_id", None)
-    return client.create_record(TABLE_NETWORK_DEVICE_CI, data)
+    # cmdb_ci_network_node is a class, not a table - use base cmdb_ci with sys_class_name
+    # Per ADR-0001: docs/adr/0001-servicenow-ci-class-selection.md
+    data["sys_class_name"] = TABLE_NETWORK_DEVICE_CI
+    return client.create_record(TABLE_ENDPOINT, data)
 
 
 def load_endpoint(client: ServiceNowAPIClient, endpoint: ServiceNowEndpoint) -> dict:
@@ -110,10 +122,18 @@ def load_entities_with_relationships(
     changeset_id: str | None = None,
     create_changeset: bool = False,
 ) -> dict[str, dict[str, str]]:
-    """Load entities with relationships using two-phase linking.
+    """Load entities with relationships using multi-phase batch processing.
 
-    Phase 1: Create all records, capture returned sys_ids.
-    Phase 2: Update records with relationship references using sys_ids.
+    Phase 1: Batch create all CI records, capture returned sys_ids.
+    Phase 2: Batch create relationship records in cmdb_rel_ci using captured sys_ids.
+
+    This is a performance optimization for batch operations through the REST API Table API.
+    ServiceNow requires sys_ids for relationships, which are only available after record creation.
+    By batching creates in phases, we optimize for speed compared to sequential one-by-one processing.
+
+    Alternative approach (slower but potentially transactional): A single web service call
+    that accepts a tree structure and processes everything in one operation. This is not
+    implemented here as it would be slower for small updates, especially through the Table API.
 
     Args:
         client: ServiceNow API client
@@ -175,11 +195,12 @@ def load_entities_with_relationships(
         )
 
     # Initialize id_mapping: {table_name: {source_id: sys_id}}
+    # Note: Both gateways and devices use cmdb_ci_netgear table, but we track them separately
     id_mapping: dict[str, dict[str, str]] = {
-        TABLE_GATEWAY_CI: {},
-        TABLE_LOCATION: {},
-        TABLE_NETWORK_DEVICE_CI: {},
-        TABLE_ENDPOINT: {},
+        TABLE_GATEWAY_CI: {},  # Gateways in cmdb_ci_netgear
+        TABLE_LOCATION: {},  # Locations in cmn_location
+        TABLE_NETWORK_DEVICE_CI: {},  # Devices also in cmdb_ci_netgear (same table as gateways)
+        TABLE_ENDPOINT: {},  # Endpoints in cmdb_ci
     }
 
     # Phase 1: Create all records in dependency order
@@ -219,101 +240,161 @@ def load_entities_with_relationships(
             if sys_id:
                 id_mapping[TABLE_ENDPOINT][source_id] = sys_id
 
-    # Phase 2: Update relationships
-    # Update locations with host_id references
+    # Phase 2: Create relationships using cmdb_rel_ci table
+    # Location → Gateway relationship (Location is Managed by Gateway)
     if locations:
         for location in locations:
             location_sys_id = id_mapping[TABLE_LOCATION].get(location.u_unifi_source_id)
             if not location_sys_id:
+                print(
+                    f"⚠️  Phase 2: Location {location.u_unifi_source_id} not found in id_mapping"
+                )
                 continue
 
-            # Get host_id from location model if it exists (should be None initially)
-            # We need to find the gateway sys_id that corresponds to the site's hostId
-            # This requires the original UniFi site model to know the hostId relationship
-            # For now, we'll update if host_id is already set in the model
-            location_update_data: dict[str, Any] = {}
+            # Create relationship: Location is Managed by Gateway
             if location.host_id:
-                # Location already has host_id set (but it's a source ID, not sys_id)
-                # Find the corresponding gateway sys_id
                 gateway_sys_id = None
                 for source_id, sys_id in id_mapping[TABLE_GATEWAY_CI].items():
                     if source_id == location.host_id:
-                        gateway_sys_id = sys_id
+                        gateway_sys_id = sys_id  # sys_id IS the ID in ServiceNow
                         break
                 if gateway_sys_id:
-                    location_update_data["host_id"] = gateway_sys_id
-
-            if location_update_data:
-                client.update_record(
-                    TABLE_LOCATION, location_sys_id, location_update_data
+                    # Create relationship: parent (Gateway) → child (Location)
+                    rel_data = {
+                        "parent": gateway_sys_id,
+                        "child": location_sys_id,
+                        "type": "Managed by::Manages",
+                    }
+                    try:
+                        client.create_record("cmdb_rel_ci", rel_data)
+                        print(
+                            f"✅ Phase 2: Created relationship Gateway → Location ({location.u_unifi_source_id})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"⚠️  Phase 2: Failed to create relationship for location {location.u_unifi_source_id}: {e}"
+                        )
+                else:
+                    print(
+                        f"⚠️  Phase 2: Gateway {location.host_id} not found in id_mapping for location {location.u_unifi_source_id}"
+                    )
+            else:
+                print(
+                    f"⚠️  Phase 2: Location {location.u_unifi_source_id} has no host_id set"
                 )
 
-    # Update devices with host_id and site_id references
+    # Device → Gateway and Device → Location relationships
     if devices:
         for device in devices:
             device_sys_id = id_mapping[TABLE_NETWORK_DEVICE_CI].get(
                 device.u_unifi_source_id
             )
             if not device_sys_id:
+                print(
+                    f"⚠️  Phase 2: Device {device.u_unifi_source_id} not found in id_mapping"
+                )
                 continue
 
-            device_update_data: dict[str, Any] = {}
-            # Find gateway sys_id if host_id is set
+            # Create relationship: Device is Managed by Gateway
             if device.host_id:
                 gateway_sys_id = None
                 for source_id, sys_id in id_mapping[TABLE_GATEWAY_CI].items():
                     if source_id == device.host_id:
-                        gateway_sys_id = sys_id
+                        gateway_sys_id = sys_id  # sys_id IS the ID in ServiceNow
                         break
                 if gateway_sys_id:
-                    device_update_data["host_id"] = gateway_sys_id
+                    rel_data = {
+                        "parent": gateway_sys_id,
+                        "child": device_sys_id,
+                        "type": "Managed by::Manages",
+                    }
+                    try:
+                        client.create_record("cmdb_rel_ci", rel_data)
+                        print(
+                            f"✅ Phase 2: Created relationship Gateway → Device ({device.u_unifi_source_id})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"⚠️  Phase 2: Failed to create Gateway→Device relationship: {e}"
+                        )
 
-            # Find location sys_id if site_id is set
+            # Create relationship: Device is Located at Site
             if device.site_id:
                 location_sys_id = None
                 for source_id, sys_id in id_mapping[TABLE_LOCATION].items():
                     if source_id == device.site_id:
-                        location_sys_id = sys_id
+                        location_sys_id = sys_id  # sys_id IS the ID in ServiceNow
                         break
                 if location_sys_id:
-                    device_update_data["site_id"] = location_sys_id
+                    rel_data = {
+                        "parent": location_sys_id,
+                        "child": device_sys_id,
+                        "type": "Located in::Contains",
+                    }
+                    try:
+                        client.create_record("cmdb_rel_ci", rel_data)
+                        print(
+                            f"✅ Phase 2: Created relationship Location → Device ({device.u_unifi_source_id})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"⚠️  Phase 2: Failed to create Location→Device relationship: {e}"
+                        )
 
-            if device_update_data:
-                client.update_record(
-                    TABLE_NETWORK_DEVICE_CI, device_sys_id, device_update_data
-                )
-
-    # Update endpoints with site_id and device_id references
+    # Endpoint → Location and Endpoint → Device relationships
     if endpoints:
         for endpoint in endpoints:
             endpoint_sys_id = id_mapping[TABLE_ENDPOINT].get(endpoint.u_unifi_source_id)
             if not endpoint_sys_id:
+                print(
+                    f"⚠️  Phase 2: Endpoint {endpoint.u_unifi_source_id} not found in id_mapping"
+                )
                 continue
 
-            endpoint_update_data: dict[str, Any] = {}
-            # Find location sys_id if site_id is set
+            # Create relationship: Endpoint is Located at Site
             if endpoint.site_id:
                 location_sys_id = None
                 for source_id, sys_id in id_mapping[TABLE_LOCATION].items():
                     if source_id == endpoint.site_id:
-                        location_sys_id = sys_id
+                        location_sys_id = sys_id  # sys_id IS the ID in ServiceNow
                         break
                 if location_sys_id:
-                    endpoint_update_data["site_id"] = location_sys_id
+                    rel_data = {
+                        "parent": location_sys_id,
+                        "child": endpoint_sys_id,
+                        "type": "Located in::Contains",
+                    }
+                    try:
+                        client.create_record("cmdb_rel_ci", rel_data)
+                        print(
+                            f"✅ Phase 2: Created relationship Location → Endpoint ({endpoint.u_unifi_source_id})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"⚠️  Phase 2: Failed to create Location→Endpoint relationship: {e}"
+                        )
 
-            # Find device sys_id if device_id is set
+            # Create relationship: Endpoint Connects through Device
             if endpoint.device_id:
                 device_sys_id = None
                 for source_id, sys_id in id_mapping[TABLE_NETWORK_DEVICE_CI].items():
                     if source_id == endpoint.device_id:
-                        device_sys_id = sys_id
+                        device_sys_id = sys_id  # sys_id IS the ID in ServiceNow
                         break
                 if device_sys_id:
-                    endpoint_update_data["device_id"] = device_sys_id
-
-            if endpoint_update_data:
-                client.update_record(
-                    TABLE_ENDPOINT, endpoint_sys_id, endpoint_update_data
-                )
+                    rel_data = {
+                        "parent": device_sys_id,
+                        "child": endpoint_sys_id,
+                        "type": "Connects to::Connected by",
+                    }
+                    try:
+                        client.create_record("cmdb_rel_ci", rel_data)
+                        print(
+                            f"✅ Phase 2: Created relationship Device → Endpoint ({endpoint.u_unifi_source_id})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"⚠️  Phase 2: Failed to create Device→Endpoint relationship: {e}"
+                        )
 
     return id_mapping

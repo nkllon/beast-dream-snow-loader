@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "beast-dream-snow-loader"
-version = "0.2.3"
+version = "0.3.0"
 description = "UniFi Dream Machine → ServiceNow CMDB Data Loader with Operational Resilience"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,9 +31,9 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Networking",
 ]
-# Note: Version 0.2.3 is the current stable release
-# Pre-releases are not installed by default (require --pre flag)
-# This indicates the package is still work in progress
+# Note: Version 0.3.0 is the current stable release
+# Stable releases install with standard `pip install beast-dream-snow-loader`
+# Pre-releases (alpha/beta/rc) would require `--pre` flag, but this is a stable release
 dependencies = [
     "pydantic",
     "requests",

@@ -38,14 +38,29 @@ To use the specific CI type tables (`cmdb_ci_network_gateway`, `cmdb_ci_network_
      export SERVICENOW_PASSWORD="your-password"
      uv run python scripts/check_table_requirements.py
      ```
-   - You should see `cmdb_ci_network_gateway` and `cmdb_ci_network_gear` as ✅ available
+   - You should see `cmdb_ci_netgear` as ✅ available
+   - Note: `cmdb_ci_site` and `cmdb_ci_network_node` are classes (not tables) - no plugin needed
 
 ## What This Plugin Provides
 
 The **CMDB CI Class Models** plugin (`sn_cmdb_ci_class`) provides:
-- `cmdb_ci_network_gateway` - Network gateway CI table
-- `cmdb_ci_network_gear` - Network device CI table
-- Other network CI type tables
+- `cmdb_ci_netgear` ✅ - Network gear CI table (verified)
+
+**⚠️ IMPORTANT:** This plugin does NOT provide:
+- `cmdb_ci_site` - This is a CLASS, not a table (no plugin needed - use `cmdb_ci` with `sys_class_name`)
+- `cmdb_ci_network_node` - This is a CLASS, not a table (no plugin needed - use `cmdb_ci` with `sys_class_name`)
+
+## Important: Table vs Class Distinction
+
+**Discovery:** `cmdb_ci_site` and `cmdb_ci_network_node` are **CLASSES**, not **TABLES**.
+
+- They exist in base CMDB (no plugin required) ✅
+- They CANNOT be used as direct table endpoints ❌
+- They MUST be used via `cmdb_ci` table with `sys_class_name` field ✅
+
+The loader code automatically handles this correctly - no additional plugin activation needed.
+
+See `docs/table_requirements.md` for complete table availability and plugin requirements.
 
 ## Alternative: Use Base Table (No Activation Needed)
 

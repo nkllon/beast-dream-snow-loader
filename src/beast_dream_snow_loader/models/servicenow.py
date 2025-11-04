@@ -59,7 +59,8 @@ class ServiceNowLocation(BaseModel):
     description: str = Field(..., description="Location description")
     timezone: str = Field(..., description="Timezone")
     host_id: str | None = Field(
-        None, description="Foreign key to gateway (sys_id reference)"
+        None,
+        description="Foreign key to gateway (sys_id reference). Note: Custom field must exist in ServiceNow (e.g., u_host_id)",
     )
 
 
@@ -88,10 +89,12 @@ class ServiceNowNetworkDeviceCI(BaseModel):
     serial_number: str | None = Field(None, description="Serial number")
     model: str | None = Field(None, description="Device model")
     site_id: str | None = Field(
-        None, description="Foreign key to site (sys_id reference)"
+        None,
+        description="Foreign key to site (sys_id reference). Note: Custom field must exist in ServiceNow (e.g., u_site_id)",
     )
     host_id: str | None = Field(
-        None, description="Foreign key to host (sys_id reference)"
+        None,
+        description="Foreign key to host (sys_id reference). Note: Custom field must exist in ServiceNow (e.g., u_host_id)",
     )
 
 
@@ -122,8 +125,10 @@ class ServiceNowEndpoint(BaseModel):
         None, description="Device type (computer, phone, IoT, etc.)"
     )
     site_id: str | None = Field(
-        None, description="Foreign key to site (sys_id reference)"
+        None,
+        description="Foreign key to site (sys_id reference). Note: Custom field must exist in ServiceNow (e.g., u_site_id)",
     )
     device_id: str | None = Field(
-        None, description="Foreign key to device (sys_id reference)"
+        None,
+        description="Foreign key to device (sys_id reference). Note: Custom field must exist in ServiceNow (e.g., u_device_id)",
     )

@@ -17,23 +17,32 @@ Run `scripts/check_table_requirements.py` to verify table availability on your S
    - **Plugin Required:** **CMDB CI Class Models** (`sn_cmdb_ci_class`)
    - **Action:** Activate plugin in PDI (see Activation Instructions below)
 
-2. **`cmdb_location`** - Location records
-   - **Status:** ❌ Not available on PDI (needs verification)
-   - **Plugin Required:** Unknown (may be standard CMDB or require plugin)
+2. **`cmdb_ci_site`** - Site/Location CI records
+   - **Status:** ✅ Available as CLASS (not a table)
+   - **Type:** CLASS only - must use `cmdb_ci` table with `sys_class_name=cmdb_ci_site`
+   - **Plugin Required:** None (class exists in base CMDB)
+   - **Note:** `cmn_location` exists but is a different table (location management, not CMDB CI)
+   - **Usage:** Use base `cmdb_ci` table with `sys_class_name` field
 
-3. **`cmdb_ci_network_gear`** - Network device CI
-   - **Status:** ❌ Not available on PDI (requires plugin activation)
+3. **`cmdb_ci_network_node`** - Network node CI (for switches, APs, etc.)
+   - **Status:** ✅ Available as CLASS (not a table)
+   - **Type:** CLASS only - must use `cmdb_ci` table with `sys_class_name=cmdb_ci_network_node`
+   - **Plugin Required:** None (class exists in base CMDB)
+   - **Note:** `cmdb_ci_netgear` exists as a table (parent class), but `cmdb_ci_network_node` is only a class
+   - **Usage:** Use base `cmdb_ci` table with `sys_class_name` field
+
+4. **`cmdb_ci_netgear`** - Network gear CI (parent class)
+   - **Status:** ✅ Available on PDI (verified with `sn_cmdb_ci_class` activated)
    - **Plugin Required:** **CMDB CI Class Models** (`sn_cmdb_ci_class`)
-   - **Note:** `cmdb_ci_netgear` exists but not `cmdb_ci_network_gear`
-   - **Action:** Activate plugin in PDI (see Activation Instructions below)
+   - **Note:** `cmdb_ci_netgear` is the actual table name (not `cmdb_ci_network_gear`)
 
-4. **`cmdb_endpoint`** - Endpoint/client records
-   - **Status:** ❌ Not available on PDI (needs verification)
-   - **Plugin Required:** Unknown (may be custom table)
+5. **`cmdb_endpoint`** - Endpoint/client records
+   - **Status:** ❌ Not available on PDI (does not exist)
+   - **Plugin Required:** None (table doesn't exist - use base `cmdb_ci` with `sys_class_name`)
 
 ### Base Table (Fallback)
 
-5. **`cmdb_ci`** - Base Configuration Item table
+6. **`cmdb_ci`** - Base Configuration Item table
    - **Status:** ✅ Available on all instances
    - **Plugin Required:** None (core CMDB)
    - **Usage:** Can use with `sys_class_name` field to categorize CIs
@@ -45,10 +54,13 @@ Run `scripts/check_table_requirements.py` to verify table availability on your S
 **Plugin ID:** `sn_cmdb_ci_class`  
 **Plugin Name:** CMDB CI Class Models
 
-This plugin provides all new class models provided by ServiceNow, including:
-- `cmdb_ci_network_gateway`
-- `cmdb_ci_network_gear`
+This plugin provides some CMDB CI class models, including:
+- `cmdb_ci_netgear` ✅ (verified - provides network gear CI)
 - Other network device CI types
+
+**⚠️ IMPORTANT:** This plugin does NOT provide:
+- `cmdb_ci_site` ❌ (requires **Discovery** plugin)
+- `cmdb_ci_network_node` ❌ (requires **Discovery** plugin)
 
 **Activation Required:** This plugin must be activated to access these specific CI type tables.
 
@@ -60,9 +72,23 @@ This plugin provides all new class models provided by ServiceNow, including:
 
 **Note:** This plugin is included with ITOM Visibility. If you're doing CMDB work, you likely already have access. If you're just kicking tires, PDIs make it free to activate.
 
+### Important: Table vs Class Distinction
+
+**Key Discovery:** `cmdb_ci_site` and `cmdb_ci_network_node` are **CLASSES**, not **TABLES**.
+
+**What this means:**
+- They can be queried via `cmdb_ci` with `sys_class_name` filter ✅
+- They CANNOT be used as direct table endpoints (returns 400 Bad Request) ❌
+- They CAN be created via base `cmdb_ci` table with `sys_class_name` field ✅
+- No plugin activation required - these classes exist in base CMDB ✅
+
+**Implementation:**
+- Use `cmdb_ci` table directly with `sys_class_name=cmdb_ci_site` or `sys_class_name=cmdb_ci_network_node`
+- This is NOT a fallback - it's the correct approach for these classes
+
 ### ITOM (IT Operations Management)
 
-ITOM may be required for certain CI types depending on licensing/subscription, but the **CMDB CI Class Models** plugin is what provides the table definitions.
+ITOM may be required for certain CI types depending on licensing/subscription. Some CI tables may require ITOM Discovery or other ITOM plugins.
 
 **Reference:** ServiceNow KB article KB1691523 lists CI types requiring ITOM subscription (for licensing, not table availability).
 
