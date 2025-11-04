@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "beast-dream-snow-loader"
-version = "0.1.0b1"
-description = "UniFi Dream Machine → ServiceNow CMDB Data Loader (BETA - Work in Progress)"
+version = "0.2.0"
+description = "UniFi Dream Machine → ServiceNow CMDB Data Loader with Operational Resilience"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -37,6 +37,7 @@ classifiers = [
 dependencies = [
     "pydantic",
     "requests",
+    "psutil",  # For system resource monitoring
 ]
 # Note: python-dotenv NOT used - cluster-wide rule: all env vars in user's home directory
 # Environment variables set via system environment (shell config in home directory)
@@ -50,6 +51,7 @@ dev = [
     "mypy>=1.5.0",
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
 ]
 
 [project.urls]
@@ -98,5 +100,8 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
+]
+markers = [
+    "asyncio: marks tests as async (deselect with '-m \"not asyncio\"')",
 ]
 
