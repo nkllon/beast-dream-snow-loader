@@ -33,10 +33,10 @@ def verify_records(client: ServiceNowAPIClient):
         print(f"     ip_address: {gw.get('ip_address', 'N/A')}")
         print(f"     hostname: {gw.get('hostname', 'N/A')}")
         # Try to get custom field
-        unifi_id = gw.get('u_unifi_source_id') or gw.get('u_unifi_source_id') or 'N/A'
+        unifi_id = gw.get("u_unifi_source_id") or gw.get("u_unifi_source_id") or "N/A"
         print(f"     u_unifi_source_id: {unifi_id}")
         # Show raw data if available
-        if 'u_unifi_raw_data' in gw:
+        if "u_unifi_raw_data" in gw:
             print("     (raw data preserved: ✓)")
 
     # Query Locations - handle 403 permission error
@@ -52,7 +52,7 @@ def verify_records(client: ServiceNowAPIClient):
             print(f"   • sys_id: {loc.get('sys_id')}")
             print(f"     name: {loc.get('name', 'N/A')}")
             print(f"     description: {loc.get('description', 'N/A')}")
-            unifi_id = loc.get('u_unifi_source_id') or 'N/A'
+            unifi_id = loc.get("u_unifi_source_id") or "N/A"
             print(f"     u_unifi_source_id: {unifi_id}")
     except Exception as e:
         if "403" in str(e):
@@ -85,7 +85,7 @@ def verify_records(client: ServiceNowAPIClient):
         print(f"   • sys_id: {dev.get('sys_id')}")
         print(f"     name: {dev.get('name', 'N/A')}")
         print(f"     mac_address: {dev.get('mac_address', 'N/A')}")
-        unifi_id = dev.get('u_unifi_source_id') or 'N/A'
+        unifi_id = dev.get("u_unifi_source_id") or "N/A"
         print(f"     u_unifi_source_id: {unifi_id}")
 
     # Query Endpoints
@@ -103,7 +103,7 @@ def verify_records(client: ServiceNowAPIClient):
         print(f"     ip_address: {ep.get('ip_address', 'N/A')}")
         print(f"     mac_address: {ep.get('mac_address', 'N/A')}")
         print(f"     sys_class_name: {ep.get('sys_class_name', 'N/A')}")
-        unifi_id = ep.get('u_unifi_source_id') or 'N/A'
+        unifi_id = ep.get("u_unifi_source_id") or "N/A"
         print(f"     u_unifi_source_id: {unifi_id}")
 
     # Query all UniFi records (any table with u_unifi_source_id)
@@ -155,4 +155,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
