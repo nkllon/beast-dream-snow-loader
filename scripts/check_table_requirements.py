@@ -7,7 +7,6 @@ This script queries the ServiceNow instance to:
 3. Identify which tables require ITOM or other plugins
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -45,14 +44,14 @@ def main():
         }
 
         if exists:
-            print(f"  ✅ Table exists")
+            print("  ✅ Table exists")
             if info:
                 print(f"  📋 Label: {info.get('label', 'N/A')}")
                 print(f"  📦 Scope: {info.get('scope', 'N/A')}")
                 print(f"  🔗 Super class: {info.get('super_class', 'N/A')}")
                 print(f"  📝 Class: {info.get('sys_class_name', 'N/A')}")
         else:
-            print(f"  ❌ Table does not exist or is not accessible")
+            print("  ❌ Table does not exist or is not accessible")
 
         print()
 
