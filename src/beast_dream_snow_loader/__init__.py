@@ -4,4 +4,3 @@ Load UniFi network infrastructure data into ServiceNow CMDB for network asset ma
 """
 
 __version__ = "0.1.0b1"
-

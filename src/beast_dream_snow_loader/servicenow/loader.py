@@ -141,7 +141,9 @@ def load_entities_with_relationships(
     """
     # Check for changeset context
     current_changeset = client.get_current_changeset()
-    active_changeset_id = changeset_id or (current_changeset.get("sys_id") if current_changeset else None)
+    active_changeset_id = changeset_id or (
+        current_changeset.get("sys_id") if current_changeset else None
+    )
 
     # Inform user about changeset status before operations
     if not active_changeset_id:
@@ -269,7 +271,9 @@ def load_entities_with_relationships(
                     update_data["site_id"] = location_sys_id
 
             if update_data:
-                client.update_record(TABLE_NETWORK_DEVICE_CI, device_sys_id, update_data)
+                client.update_record(
+                    TABLE_NETWORK_DEVICE_CI, device_sys_id, update_data
+                )
 
     # Update endpoints with site_id and device_id references
     if endpoints:

@@ -107,12 +107,17 @@ def main():
             print(f"  Found {len(plugins)} active plugins")
             # Filter for ITOM/Discovery related
             itom_plugins = [
-                p for p in plugins if "itom" in p.get("name", "").lower() or "discovery" in p.get("name", "").lower()
+                p
+                for p in plugins
+                if "itom" in p.get("name", "").lower()
+                or "discovery" in p.get("name", "").lower()
             ]
             if itom_plugins:
                 print("  ITOM/Discovery related plugins:")
                 for plugin in itom_plugins:
-                    print(f"    - {plugin.get('name', 'N/A')} (v{plugin.get('version', 'N/A')})")
+                    print(
+                        f"    - {plugin.get('name', 'N/A')} (v{plugin.get('version', 'N/A')})"
+                    )
             else:
                 print("  ⚠️  No ITOM/Discovery plugins found")
         else:
@@ -125,4 +130,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

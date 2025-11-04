@@ -491,6 +491,11 @@ From `openflow-pr-update-pack/OpenFlow-Playground/agent_network_personalities.md
 - **1Password Integration**: Use 1Password CLI for secure credential storage
 - **Vault**: "Beastmaster" vault for all project credentials
 - **Never hardcode**: All secrets in 1Password or environment variables
+- **Canonical Source Principle**: 1Password (OP) is the canonical source of truth for all credentials
+  - GitHub Secrets are projections/copies of the canonical 1Password source
+  - To project credentials to GitHub: `op read "op://Beastmaster/Item Name/field" | gh secret set SECRET_NAME --repo nkllon/<repo-name>`
+  - Always update credentials in 1Password first, then project to GitHub if needed
+  - Pattern: 1Password = source of truth, GitHub = derived projection
 
 ### Quality & Standards
 
@@ -562,3 +567,5 @@ When working on beast projects, ensure:
 **Last Updated**: 2025-11-03  
 **Status**: Active Development  
 **Agent Role Accepted**: 2025-11-03
+
+**Credential Management Update**: 2025-11-03 - Established 1Password as canonical source, GitHub secrets as projections
