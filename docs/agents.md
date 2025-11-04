@@ -646,4 +646,5 @@ When working on beast projects, ensure:
 **Agent Role Accepted**: 2025-11-03
 
 **Credential Management Update**: 2025-11-03 - Established 1Password as canonical source, GitHub secrets as projections  
-**CI/CD Quality Update**: 2025-11-04 - Added SonarCloud workflow fixes and code quality lessons
+**CI/CD Quality Update**: 2025-11-04 - Added SonarCloud workflow fixes and code quality lessons  
+**Release Automation Update**: 2025-11-04 - Added requirement to NEVER ask for version/tag - always read from `pyproject.toml` and construct tag as `v{version}`
