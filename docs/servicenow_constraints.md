@@ -49,11 +49,16 @@
 
 **Assumption:** Standard ServiceNow CMDB tables are available and can be used.
 
-**Tables We Assume:**
-- `cmdb_ci_network_gateway` - Network gateway CI
-- `cmdb_location` - Location records
-- `cmdb_ci_network_gear` - Network device CI
-- `cmdb_endpoint` - Endpoint/client records (may be custom)
+**Tables We Use (Actual Available Classes):**
+- `cmdb_ci_netgear` - Network gear CI (physical hardware - for UniFi Dream Machine gateway)
+- `cmdb_ci_site` - Site/location records (`cmdb_location` doesn't exist)
+- `cmdb_ci_network_node` - Network node CI (subclass of `cmdb_ci_netgear` for network devices)
+- `cmdb_ci` - Base CI table (for endpoints/clients with `sys_class_name`)
+
+**Note on Class Selection:**
+- ServiceNow CIs can be queried from multiple parent class tables (inheritance hierarchy)
+- We use the most specific appropriate class for each device type
+- See `docs/class_selection.md` for detailed class selection rationale and hierarchy documentation
 
 **PDI Finding (Verified):** Specific CI type tables (e.g., `cmdb_ci_network_gateway`) do not exist on PDI.
 - **Verified via:** `scripts/check_table_requirements.py` - confirms tables don't exist

@@ -11,10 +11,12 @@ from beast_dream_snow_loader.models.servicenow import (
 from beast_dream_snow_loader.servicenow.api_client import ServiceNowAPIClient
 
 # Table name mappings (ServiceNow standard tables or custom)
-TABLE_GATEWAY_CI = "cmdb_ci_network_gateway"  # Standard ServiceNow table
-TABLE_LOCATION = "cmdb_location"  # Standard ServiceNow table
-TABLE_NETWORK_DEVICE_CI = "cmdb_ci_network_gear"  # Standard ServiceNow table
-TABLE_ENDPOINT = "cmdb_endpoint"  # Standard ServiceNow table (or custom)
+# Note: Using actual available classes from CMDB CI Class Models plugin
+TABLE_GATEWAY_CI = "cmdb_ci_netgear"  # Network Gear (physical hardware - UniFi Dream Machine is a physical device)
+# Alternative: "cmdb_ci_network_node" (subclass of netgear, also valid for network devices)
+TABLE_LOCATION = "cmdb_ci_site"  # Site/Location (cmdb_location doesn't exist)
+TABLE_NETWORK_DEVICE_CI = "cmdb_ci_network_node"  # Network Node (subclass of cmdb_ci_netgear)
+TABLE_ENDPOINT = "cmdb_ci"  # Use base table with sys_class_name (cmdb_endpoint doesn't exist)
 
 
 def load_gateway_ci(client: ServiceNowAPIClient, gateway: ServiceNowGatewayCI) -> dict:
