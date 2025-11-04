@@ -244,7 +244,9 @@ def load_entities_with_relationships(
                     location_update_data["host_id"] = gateway_sys_id
 
             if location_update_data:
-                client.update_record(TABLE_LOCATION, location_sys_id, location_update_data)
+                client.update_record(
+                    TABLE_LOCATION, location_sys_id, location_update_data
+                )
 
     # Update devices with host_id and site_id references
     if devices:
@@ -310,6 +312,8 @@ def load_entities_with_relationships(
                     endpoint_update_data["device_id"] = device_sys_id
 
             if endpoint_update_data:
-                client.update_record(TABLE_ENDPOINT, endpoint_sys_id, endpoint_update_data)
+                client.update_record(
+                    TABLE_ENDPOINT, endpoint_sys_id, endpoint_update_data
+                )
 
     return id_mapping
