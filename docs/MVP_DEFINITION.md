@@ -2,7 +2,7 @@
 
 ## Minimum Viable Product (MVP)
 
-**Version:** 0.1.0b1 (Beta Pre-Release)
+**Version:** 0.2.3 (Stable Release)
 
 ### Core Functionality
 
@@ -87,7 +87,7 @@
 
 **Install:**
 ```bash
-pip install --pre beast-dream-snow-loader
+pip install beast-dream-snow-loader
 ```
 
 **Basic Usage:**
@@ -112,5 +112,5 @@ python examples/complete_workflow.py
 
 ### MVP Status: ✅ COMPLETE
 
-All core functionality implemented, tested, and documented. Ready for beta pre-release publication.
+All core functionality implemented, tested, and documented. Ready for stable distribution and iterative enhancements.
 

@@ -10,6 +10,23 @@
 
 ---
 
+## [0.2.3] - 2025-11-05 - Stabilization and Publishing Reliability
+
+### Added
+
+- **Configuration Management:** Explicit environment specification in the configuration system to support staged deployments and clearer defaults.
+
+### Changed
+
+- **Version Management:** Simplified packaging by reverting to static versioning once PyPI publishing automation proved reliable.
+- **Documentation:** Updated publishing guides and project overviews to reflect the stable release cadence and direct installation path.
+
+### Fixed
+
+- **Packaging Consistency:** Synchronized version metadata across `pyproject.toml` and module exports to eliminate drift during release automation fixes.
+
+---
+
 ## [0.2.0] - 2025-11-04 - Operational Resilience Release
 
 ### Added

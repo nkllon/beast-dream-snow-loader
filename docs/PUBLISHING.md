@@ -2,13 +2,9 @@
 
 ## Current Status
 
-**Version:** `0.1.0b1` (Beta Pre-Release)
+**Version:** `0.2.3` (Stable Release)
 
-**Why Beta Pre-Release:**
-- Pre-releases (versions with `.b1`, `.a1`, `.rc1`) are NOT installed by default
-- Users must explicitly use `pip install --pre` to install
-- Perfect for "work in progress" status
-- Signals that the package is not production-ready yet
+**Release Cadence:** Monthly stable releases with on-demand patch follow-ups to deliver fixes without waiting for the next feature drop.
 
 ## PyPI Publishing
 
@@ -27,10 +23,9 @@
 
 1. **Create GitHub Release:**
    - Go to GitHub repository → Releases → "Draft a new release"
-   - Tag: `v0.1.0b1` (must match version in `pyproject.toml`)
-   - Title: `v0.1.0b1 - Beta Pre-Release`
+   - Tag: `v0.2.3` (must match version in `pyproject.toml`)
+   - Title: `v0.2.3 - Stable Release`
    - Description: Copy from [RELEASE_NOTES.md](../RELEASE_NOTES.md)
-   - Check "Set as a pre-release" (important!)
    - Click "Publish release"
 
 2. **GitHub Actions Will:**
@@ -43,7 +38,7 @@
 1. **Trigger Workflow:**
    - Go to GitHub Actions → "Publish to PyPI" workflow
    - Click "Run workflow"
-   - Enter version: `0.1.0b1`
+   - Enter version: `0.2.3`
    - Click "Run workflow"
 
 ### Verification
@@ -52,25 +47,25 @@ After publishing, verify:
 
 1. **Check PyPI Page:**
    - Visit https://pypi.org/project/beast-dream-snow-loader/
-   - Should show version `0.1.0b1`
-   - Should show "Beta" development status
+   - Should show version `0.2.3`
+   - Development status should list the stable classifier
 
 2. **Test Installation:**
    ```bash
-   # Pre-releases require --pre flag
-   pip install --pre beast-dream-snow-loader
-   
+   pip install beast-dream-snow-loader
+
    # Verify version
    python -c "import beast_dream_snow_loader; print(beast_dream_snow_loader.__version__)"
-   # Should output: 0.1.0b1
-   ```
+   # Should output: 0.2.3
+```
 
-3. **Default Installation Should NOT Work:**
-   ```bash
-   # This should NOT install pre-release
-   pip install beast-dream-snow-loader
-   # Should install latest stable (none yet, so should fail or warn)
-   ```
+3. **Default Installation Works:**
+```bash
+# This installs the latest published stable build
+pip install beast-dream-snow-loader
+python -c "import beast_dream_snow_loader; print(beast_dream_snow_loader.__version__)"
+# Should output: 0.2.3
+```
 
 ## SonarCloud Setup
 
@@ -115,49 +110,46 @@ After setup:
 
 ## Version Management
 
-### Pre-Release Versions
+### Versioning Strategy
 
-**Format:** `MAJOR.MINOR.PATCH{b|a|rc}N`
+**Format:** `MAJOR.MINOR.PATCH`
 
 Examples:
-- `0.1.0b1` - Beta 1 (current)
-- `0.1.0b2` - Beta 2 (next beta)
-- `0.1.0a1` - Alpha 1 (if needed)
-- `0.1.0rc1` - Release Candidate 1
-- `0.1.0` - Stable release (final)
+- `0.2.3` - Current stable release
+- `0.2.4` - Next patch release (bug fixes, documentation updates)
+- `0.3.0` - Next feature release (new capabilities, breaking changes if required)
 
-**Pre-Release Behavior:**
-- Users must use `pip install --pre` to install
-- Default `pip install` will NOT install pre-releases
-- Perfect for "work in progress" status
+**Stability Expectations:**
+- Stable releases install with the standard `pip install` command
+- Patch releases should remain backward compatible and focus on fixes and docs
+- Minor releases bundle new functionality and larger improvements
 
 ### Updating Version
 
 1. **Update `pyproject.toml`:**
    ```toml
-   version = "0.1.0b2"  # Next beta
+   version = "0.2.4"  # Next patch release
    ```
 
 2. **Update `src/beast_dream_snow_loader/__init__.py`:**
    ```python
-   __version__ = "0.1.0b2"
+   __version__ = "0.2.4"
    ```
 
 3. **Update `sonar-project.properties`:**
    ```properties
-   sonar.projectVersion=0.1.0b2
+   sonar.projectVersion=0.2.4
    ```
 
 4. **Commit and push:**
    ```bash
    git add -A
-   git commit -m "chore: bump version to 0.1.0b2"
+    git commit -m "chore: bump version to 0.2.4"
    git push
    ```
 
 5. **Create GitHub Release:**
-   - Tag: `v0.1.0b2`
-   - Mark as pre-release
+   - Tag: `v0.2.4`
    - Publish
 
 ## Testing GitHub Workflows
@@ -181,8 +173,7 @@ Examples:
 ### Test Publish Workflow
 
 1. **Create Test Release:**
-   - Create GitHub release with tag `v0.1.0b1`
-   - Mark as pre-release
+   - Create GitHub release with tag `v0.2.3`
    - Publish
 
 2. **Monitor Workflow:**
@@ -207,7 +198,7 @@ Examples:
 ### PyPI Publishing Issues
 
 **"Package already exists":**
-- Increment version number (e.g., `0.1.0b1` → `0.1.0b2`)
+- Increment version number (e.g., `0.2.3` → `0.2.4`)
 - Update version in `pyproject.toml` and `__init__.py`
 
 **"403 Forbidden":**
