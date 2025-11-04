@@ -44,7 +44,7 @@ def main():
             "ip_address": "192.168.1.1",
             "hostname": "smoke-test-gateway.example.com",
         }
-        
+
         # Try to load into specific table first, fallback to base cmdb_ci
         try:
             test_gateway = ServiceNowGatewayCI(
@@ -57,7 +57,7 @@ def main():
             result = load_gateway_ci(client, test_gateway)
         except Exception as e:
             if "Invalid table" in str(e):
-                print(f"   ⚠️  Specific table not available, using base cmdb_ci table...")
+                print("   ⚠️  Specific table not available, using base cmdb_ci table...")
                 # Fallback to base cmdb_ci table
                 result = client.create_record("cmdb_ci", test_data)
             else:

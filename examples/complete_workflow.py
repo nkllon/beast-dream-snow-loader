@@ -112,7 +112,7 @@ def main():
         # Step 2: Load sample UniFi data
         print("\n2. Loading UniFi data...")
         host, site, device, client_data = create_sample_unifi_data()
-        print(f"   ✓ Loaded: 1 host, 1 site, 1 device, 1 client")
+        print("   ✓ Loaded: 1 host, 1 site, 1 device, 1 client")
 
         # Step 3: Transform to ServiceNow models
         print("\n3. Transforming UniFi data to ServiceNow models...")
@@ -170,4 +170,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
