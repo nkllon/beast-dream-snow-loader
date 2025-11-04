@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tag verification
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -34,6 +36,26 @@ jobs:
           uv sync --all-extras
           # Ensure dev dependencies are available
           uv pip install -e ".[dev]"
+
+      - name: Verify tag and version
+        run: |
+          # Extract version from tag
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_VERSION=${TAG_NAME#v}  # Remove 'v' prefix
+          
+          # Get version from pyproject.toml
+          PROJECT_VERSION=$(uv run python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+          
+          echo "Tag: $TAG_NAME"
+          echo "Tag version: $TAG_VERSION"
+          echo "Project version: $PROJECT_VERSION"
+          
+          if [ "$TAG_VERSION" != "$PROJECT_VERSION" ]; then
+            echo "❌ ERROR: Tag version ($TAG_VERSION) does not match project version ($PROJECT_VERSION)"
+            exit 1
+          fi
+          
+          echo "✓ Version validation passed"
 
       - name: Run quality checks
         run: |
