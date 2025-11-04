@@ -50,12 +50,25 @@ def create_sample_unifi_data():
         hardwareId="UDM-Pro",
         type="udm",
         ipAddress="192.168.1.1",
+        owner=True,
+        isBlocked=False,
+        registrationTime="2025-01-01T00:00:00Z",
+        lastConnectionStateChange="2025-11-03T10:00:00Z",
+        latestBackupTime="2025-11-03T09:00:00Z",
         reportedState={
+            "controller_uuid": "test-controller-uuid-001",
+            "host_type": 1,
             "hostname": "udm-pro-001",
+            "mgmt_port": 8443,
+            "name": "UDM Pro",
+            "state": "connected",
+            "version": "3.0.0",
             "hardware": {"mac": "aa:bb:cc:dd:ee:01"},
             "firmware": {"version": "3.0.0"},
         },
-        userData={},
+        userData={
+            "status": "active",
+        },
     )
 
     # Sample UniFi Site
@@ -67,11 +80,26 @@ def create_sample_unifi_data():
         meta={
             "name": "Main Office",
             "desc": "Primary office location",
+            "timezone": "America/New_York",
         },
         statistics={
             "counts": {
-                "device": 5,
-                "client": 25,
+                "criticalNotification": 0,
+                "gatewayDevice": 1,
+                "guestClient": 0,
+                "lanConfiguration": 1,
+                "offlineDevice": 0,
+                "offlineGatewayDevice": 0,
+                "offlineWifiDevice": 0,
+                "offlineWiredDevice": 0,
+                "pendingUpdateDevice": 0,
+                "totalDevice": 5,
+                "wanConfiguration": 1,
+                "wifiClient": 15,
+                "wifiConfiguration": 1,
+                "wifiDevice": 3,
+                "wiredClient": 10,
+                "wiredDevice": 2,
             }
         },
     )
