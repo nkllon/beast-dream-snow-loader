@@ -1,11 +1,11 @@
 # UV workspace configuration
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "beast-dream-snow-loader"
-version = "0.2.2"
+dynamic = ["version"]
 description = "UniFi Dream Machine → ServiceNow CMDB Data Loader with Operational Resilience"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -54,6 +54,7 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "types-requests>=2.31.0",
     "types-psutil>=5.9.0",
+    "hatch-vcs>=0.3.0",
 ]
 
 [project.urls]
@@ -96,6 +97,12 @@ ignore = [
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/beast_dream_snow_loader/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -86,4 +86,5 @@ ServiceNow CMDB Tables
 - **Documentation:** Docstrings for all public APIs
 - **OSS:** MIT License, PyPI publishing, SonarCloud quality
 - **CI/CD:** Use `SonarSource/sonarcloud-github-action@master`, proper coverage configuration, systematic issue resolution
+- **Immutability:** NEVER delete/modify artifacts (tags, commits, configs) without understanding origin, dependencies, and having explicit authorization - see `.kiro/steering/immutability-principle.md`
 
