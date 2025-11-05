@@ -29,7 +29,7 @@ beast-dream-snow-loader transforms and loads UniFi network data (hosts, sites, d
 ## Project Status
 
 ✅ **MVP COMPLETE** - All core features implemented, tested, and published
-📦 **Version 0.2.3** (Stable Release) - Published to PyPI
+📦 **Version 0.3.0:** (Stable Release) - Published to PyPI
 🗓️ **Release Cadence:** Monthly stable releases with interim patches as needed
 📋 **Features:** See [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md) for complete feature list
 🎉 **Status:** See [docs/MVP_COMPLETE.md](docs/MVP_COMPLETE.md) for MVP completion summary
